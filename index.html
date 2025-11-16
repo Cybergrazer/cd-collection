@@ -272,7 +272,7 @@
             border-radius: 8px;
         }
         .panel-row { display: flex; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 5px; }
-        .panel-row label { margin-right: 10px; font-weight: bold; min-width: 100px; margin-bottom: 5px; }
+        .panel-row label { margin-right: 10px; font-weight: bold; margin-bottom: 5px; } /* Removed min-width */
         .panel-row input { flex: 1; min-width: 250px; }
         #status {
             font-size: 1.1em;
@@ -423,9 +423,12 @@
         <!-- Google Sheet Panel -->
         <div class="panel">
             <h3>Google Sheet Import</h3>
+            <!-- MODIFIED: Added input for Sheet Name -->
             <div class="panel-row">
-                <label for="sheetUrl">Public Sheet URL:</label>
-                <input type="url" id="sheetUrl" size="60" placeholder="Paste your full Google Sheet URL here">
+                <label for="sheetUrl" style="min-width: 120px;">Public Sheet URL:</label>
+                <input type="url" id="sheetUrl" style="flex: 2;" placeholder="Paste your full Google Sheet URL here">
+                <label for="sheetNameInput" style="min-width: 80px; margin-left: 10px;">Tab Name:</label>
+                <input type="text" id="sheetNameInput" style="flex: 1;" placeholder="e.g., Sheet1">
             </div>
             <button onclick="app.loadFromGoogleSheet()">1. Load from Google Sheet</button>
             <button onclick="app.processSheetQueue()">2. Find Album Info</button>
@@ -449,7 +452,6 @@
                 <button onclick="app.exportToCSV()">Export to CSV</button>
                 <button onclick="document.getElementById('jsonInput').click()">Import from JSON</button>
                 <button onclick="app.exportDB()">Export to JSON</button>
-                <!-- ADDED "Update Image" button -->
                 <button id="updateImageBtn" onclick="app.openCoverArtModal()">Update Image</button>
             </div>
         </div>
@@ -479,7 +481,7 @@
         </div>
     </div>
 
-    <!-- ADDED: Cover Art Modal -->
+    <!-- Cover Art Modal -->
     <div id="coverArtModal">
         <div class="modal-content">
             <span class="modal-close-btn" id="coverArtModalClose">&times;</span>
@@ -575,9 +577,6 @@ const api = {
         }
     },
 
-    /**
-     * ADDED: New API function to get all images for a release
-     */
     async fetchAllCoverArt(mbid) {
         const url = `https://coverartarchive.org/release/${mbid}`;
         try {
@@ -611,11 +610,11 @@ const app = {
         albumInput: document.getElementById('albumInput'),
         barcodeInput: document.getElementById('barcodeInput'),
         alphaNav: document.getElementById('alphaNav'),
-        // ADDED: New elements
         updateImageBtn: document.getElementById('updateImageBtn'),
         coverArtModal: document.getElementById('coverArtModal'),
         coverArtModalGrid: document.getElementById('coverArtModalGrid'),
-        coverArtModalClose: document.getElementById('coverArtModalClose')
+        coverArtModalClose: document.getElementById('coverArtModalClose'),
+        sheetNameInput: document.getElementById('sheetNameInput') // Added
     },
 
     // --- Utility Functions ---
@@ -701,7 +700,7 @@ const app = {
                 </div>
                 <div class="sidebar-links-container"></div>
             `;
-            if (this.elements.updateImageBtn) this.elements.updateImageBtn.disabled = true; // ADDED
+            this.elements.updateImageBtn.disabled = true;
             return;
         }
 
@@ -743,10 +742,8 @@ const app = {
             <div class="sidebar-links-container">${linksHtml}</div>
         `;
         
-        // ADDED: Enable Update Image button if album has an ID
-        if (this.elements.updateImageBtn) {
-            this.elements.updateImageBtn.disabled = !album.id;
-        }
+        // Enable Update Image button if album has an ID
+        this.elements.updateImageBtn.disabled = !album.id;
     },
 
     /**
@@ -795,12 +792,19 @@ const app = {
      */
     async loadFromGoogleSheet() {
         const url = this.elements.sheetUrl.value;
+        const sheetName = this.elements.sheetNameInput.value.trim(); // ADDED
+
         if (!url) {
             this.setStatus("Please paste your Google Sheet URL first.");
             return;
         }
+        if (!sheetName) { // ADDED
+            this.setStatus("Please enter your Sheet Tab Name.");
+            return;
+        }
 
-        const regex = /spreadsheets\/d\/([a-zA-Z0-9-_]+)(?:\/.*#gid=([0-9]+))?/;
+        // MODIFIED: Regex now only needs to find the sheet ID
+        const regex = /spreadsheets\/d\/([a-zA-Z0-9-_]+)/;
         const matches = url.match(regex);
         
         if (!matches || !matches[1]) {
@@ -809,8 +813,8 @@ const app = {
         }
         
         const SHEET_ID = matches[1];
-        const GID = matches[2] || '0'; 
-        const apiUrl = `https://opensheet.elk.sh/${SHEET_ID}/${GID}`;
+        // MODIFIED: Use the sheetName instead of a GID
+        const apiUrl = `https://opensheet.elk.sh/${SHEET_ID}/${encodeURIComponent(sheetName)}`;
         
         this.setStatus("Fetching data from Google Sheet...");
         this.sheetQueue = []; 
@@ -820,7 +824,8 @@ const app = {
         try {
             const response = await fetch(apiUrl);
             if (!response.ok) {
-                throw new Error(`Could not access sheet. Is it public? (Status: ${response.status})`);
+                // MODIFIED: More helpful error message
+                throw new Error(`Could not access sheet. Status: ${response.status}. Check Sheet URL, Tab Name (case-sensitive), and sharing (must be 'Anyone with the link')`);
             }
             const rows = await response.json();
             
@@ -1426,7 +1431,7 @@ const app = {
         this.createAlphaNav(); // Create the A-Z nav on load
         this.setStatus("App loaded. Import a JSON/CSV database or load from a Google Sheet.");
         
-        // --- ADDED: Init for modal ---
+        // --- Init for modal ---
         this.elements.updateImageBtn.disabled = true;
         this.elements.coverArtModalClose.onclick = () => this.closeCoverArtModal();
         window.onclick = (event) => {
