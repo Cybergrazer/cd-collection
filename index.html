@@ -31,6 +31,16 @@
             font-size: 1.2em;
             margin-top: 0;
             color: var(--gold);
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        #albumCount {
+            font-size: 0.8em;
+            color: var(--text-med);
+            background-color: var(--bg-light);
+            padding: 2px 8px;
+            border-radius: 4px;
         }
         button {
             background: var(--accent);
@@ -41,9 +51,9 @@
             cursor: pointer;
             font-size: 1em;
             margin: 0 5px 5px 0;
-            display: inline-flex; /* Used for aligning icon */
+            display: inline-flex; 
             align-items: center;
-            gap: 8px; /* Space between icon and text */
+            gap: 8px; 
         }
         button:hover { background: #0099e6; }
         button:disabled { background: #555; color: #999; cursor: not-allowed; }
@@ -73,7 +83,7 @@
         .main-layout {
             display: flex;
             flex-direction: row;
-            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            flex-wrap: wrap; 
             align-items: flex-start;
             gap: 20px;
             margin-top: 20px;
@@ -87,7 +97,7 @@
             padding: 20px;
             border-radius: 8px;
             min-height: 400px;
-            min-width: 300px; /* Ensure it has a minimum width */
+            min-width: 300px; 
         }
         
         /* --- Album Card Styles --- */
@@ -134,7 +144,7 @@
             width: 16px;
             height: 16px;
             fill: currentColor;
-            display: block; /* Fixes potential alignment issues */
+            display: block; 
         }
         .album-card-text-content {
             padding: 10px;
@@ -174,6 +184,10 @@
             color: #fff;
             opacity: 0.7;
             transition: opacity 0.2s;
+            font-weight: bold;
+            font-size: 0.8em;
+            text-decoration: none;
+            line-height: 16px; /* Align Plex text */
         }
         .album-card-logo svg {
             width: 100%;
@@ -193,7 +207,6 @@
             padding: 20px;
             border-radius: 8px;
             overflow-y: auto;
-            /* Flex layout to push wiki box to bottom */
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -218,7 +231,7 @@
         
         /* --- Sidebar Links --- */
         .sidebar-links-container {
-            flex-shrink: 0; /* Don't shrink */
+            flex-shrink: 0; 
             margin-top: 20px;
         }
         .sidebar-links {
@@ -257,7 +270,7 @@
             text-overflow: ellipsis;
         }
         .sidebar-wiki-box-text a {
-            color: #0645ad; /* Wikipedia link color */
+            color: #0645ad; 
             text-decoration: none;
             font-size: 0.9em;
         }
@@ -272,7 +285,7 @@
             border-radius: 8px;
         }
         .panel-row { display: flex; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 5px; }
-        .panel-row label { margin-right: 10px; font-weight: bold; margin-bottom: 5px; } /* Removed min-width */
+        .panel-row label { margin-right: 10px; font-weight: bold; margin-bottom: 5px; } 
         .panel-row input { flex: 1; min-width: 250px; }
         #status {
             font-size: 1.1em;
@@ -308,12 +321,15 @@
             padding: 5px 10px;
             font-size: 1.1em;
             font-weight: bold;
-            color: var(--accent);
+            color: var(--accent); 
             cursor: pointer;
             border-radius: 4px;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, color 0.2s;
         }
-        #alphaNav span:hover {
+        #alphaNav span:not(.disabled) {
+            color: var(--gold);
+        }
+        #alphaNav span:hover:not(.disabled) {
             background-color: var(--bg-light);
         }
         #alphaNav span.disabled {
@@ -324,7 +340,7 @@
 
         /* --- Cover Art Modal Styles --- */
         #coverArtModal {
-            display: none; /* Hidden by default */
+            display: none; 
             position: fixed;
             z-index: 1000;
             left: 0;
@@ -423,7 +439,6 @@
         <!-- Google Sheet Panel -->
         <div class="panel">
             <h3>Google Sheet Import</h3>
-            <!-- MODIFIED: Added input for Sheet Name -->
             <div class="panel-row">
                 <label for="sheetUrl" style="min-width: 120px;">Public Sheet URL:</label>
                 <input type="url" id="sheetUrl" style="flex: 2;" placeholder="Paste your full Google Sheet URL here">
@@ -437,7 +452,10 @@
 
         <!-- Manual Add / DB Management Panel -->
         <div class="panel">
-            <h3>Manage Collection</h3>
+            <h3>
+                Manage Collection
+                <span id="albumCount">Total: 0</span>
+            </h3>
             <div class="panel-row">
                 <input type="text" id="artistInput" placeholder="Artist name">
                 <input type="text" id="albumInput" placeholder="Album title">
@@ -614,7 +632,8 @@ const app = {
         coverArtModal: document.getElementById('coverArtModal'),
         coverArtModalGrid: document.getElementById('coverArtModalGrid'),
         coverArtModalClose: document.getElementById('coverArtModalClose'),
-        sheetNameInput: document.getElementById('sheetNameInput') // Added
+        sheetNameInput: document.getElementById('sheetNameInput'),
+        albumCount: document.getElementById('albumCount')
     },
 
     // --- Utility Functions ---
@@ -643,6 +662,8 @@ const app = {
      */
     renderGrid() {
         this.elements.grid.innerHTML = '';
+        this.elements.albumCount.textContent = `Total: ${this.db.length}`; 
+        
         if (this.db.length === 0) {
             this.elements.grid.innerHTML = '<p style="color:#888;">No albums loaded.</p>';
         }
@@ -659,6 +680,7 @@ const app = {
             const titleEnc = encodeURIComponent(album.title);
             const amazonUrl = `https://music.amazon.com/search/${artistEnc}+${titleEnc}`;
             const tidalUrl = `https://tidal.com/search?q=${artistEnc}+${titleEnc}`;
+            const plexUrl = `https://app.plex.tv/desktop/#!/search?query=${artistEnc}%20${titleEnc}`;
 
             // Build the card HTML
             card.innerHTML = `
@@ -677,6 +699,9 @@ const app = {
                     </div>
                     <div class="album-card-row" onclick="app.selectAlbum(${idx})">
                         <span class="album-card-row-text album-card-artist">${album.artist}</span>
+                        <a href="${plexUrl}" target="_blank" rel="noopener noreferrer" class="album-card-logo" title="Plex" onclick="event.stopPropagation()" style="margin-right: 5px;">
+                            Plex
+                        </a>
                         <a href="${amazonUrl}" target="_blank" rel="noopener noreferrer" class="album-card-logo" title="Amazon" onclick="event.stopPropagation()">
                             <svg><use href="#icon-amazon"></use></svg>
                         </a>
@@ -791,19 +816,29 @@ const app = {
      * Step 1: Loads data from Google Sheet and sorts it.
      */
     async loadFromGoogleSheet() {
-        const url = this.elements.sheetUrl.value;
-        const sheetName = this.elements.sheetNameInput.value.trim(); // ADDED
+        let url = this.elements.sheetUrl.value.trim();
+        let sheetName = this.elements.sheetNameInput.value.trim(); 
+        const defaultUrl = 'https://docs.google.com/spreadsheets/d/1svSdxGP0T63INwG0SzUvomOdFWTTOgdtK5tqXXqa66M/edit?gid=1370368781#gid=1370368781';
+        const defaultSheetName = 'GH CD';
 
+        // Check if the URL field is empty
         if (!url) {
-            this.setStatus("Please paste your Google Sheet URL first.");
-            return;
+            url = defaultUrl;
+            this.elements.sheetUrl.value = url;
+            
+            // If the URL was empty, also default the sheet name if it's empty
+            if (!sheetName) {
+                sheetName = defaultSheetName;
+                this.elements.sheetNameInput.value = sheetName;
+            }
         }
-        if (!sheetName) { // ADDED
+        
+        // At this point, if sheetName is still empty (because user entered a URL but no tab name), stop.
+        if (!sheetName) { 
             this.setStatus("Please enter your Sheet Tab Name.");
             return;
         }
 
-        // MODIFIED: Regex now only needs to find the sheet ID
         const regex = /spreadsheets\/d\/([a-zA-Z0-9-_]+)/;
         const matches = url.match(regex);
         
@@ -813,7 +848,6 @@ const app = {
         }
         
         const SHEET_ID = matches[1];
-        // MODIFIED: Use the sheetName instead of a GID
         const apiUrl = `https://opensheet.elk.sh/${SHEET_ID}/${encodeURIComponent(sheetName)}`;
         
         this.setStatus("Fetching data from Google Sheet...");
@@ -824,7 +858,6 @@ const app = {
         try {
             const response = await fetch(apiUrl);
             if (!response.ok) {
-                // MODIFIED: More helpful error message
                 throw new Error(`Could not access sheet. Status: ${response.status}. Check Sheet URL, Tab Name (case-sensitive), and sharing (must be 'Anyone with the link')`);
             }
             const rows = await response.json();
@@ -853,7 +886,7 @@ const app = {
                         img: row.img || "", 
                         tracks: (function() {
                             try {
-                                return JSON.parse(row.tracks);
+                                return (row.tracks && row.tracks.length > 2) ? JSON.parse(row.tracks) : [];
                             } catch (e) {
                                 return []; 
                             }
@@ -1134,7 +1167,7 @@ const app = {
         }
     },
 
-    // --- Cover Art Modal Functions (ADDED) ---
+    // --- Cover Art Modal Functions ---
     
     /**
      * Opens the modal to find new cover art.
@@ -1370,7 +1403,8 @@ const app = {
                     let tracks = [];
                     const tracksJson = cols[tracksIdx] || "[]";
                     try {
-                        if (tracksJson) {
+                         // Handle cases where tracks might be stored as '[]' or an empty string
+                        if (tracksJson && tracksJson.length > 2) {
                             tracks = JSON.parse(tracksJson);
                         }
                     } catch (e) {
