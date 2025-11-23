@@ -570,8 +570,9 @@ const api = {
         }
     },
 
+    // MODIFIED: Added '+media' to ensure track data is robustly fetched
     async fetchReleaseDetails(mbid) {
-        const url = `https://musicbrainz.org/ws/2/release/${mbid}?inc=recordings&fmt=json`;
+        const url = `https://musicbrainz.org/ws/2/release/${mbid}?inc=recordings+media&fmt=json`;
         try {
             const response = await this.throttledFetch(url);
             if (!response.ok) throw new Error(`MusicBrainz tracks failed: ${response.status}`);
@@ -877,20 +878,27 @@ const app = {
                     return; 
                 }
 
-                if (row.id) {
+                // MODIFIED: Logic to parse tracks safely
+                let tracks = [];
+                try {
+                    // Handle cases where tracks might be stored as '[]' or an empty string
+                    if (row.tracks && row.tracks.length > 2) {
+                        tracks = JSON.parse(row.tracks);
+                    }
+                } catch (e) {
+                    // If parsing fails, tracks remains []
+                }
+
+                // MODIFIED: Only consider the album "complete" if it has an ID AND tracks.
+                // If it has an ID but no tracks, we force it into the queue to fetch from MusicBrainz again.
+                if (row.id && tracks.length > 0) {
                     this.db.push({
                         id: row.id,
                         artist: row.Artist,
                         title: row.Album,
                         date: row.date || "",
                         img: row.img || "", 
-                        tracks: (function() {
-                            try {
-                                return (row.tracks && row.tracks.length > 2) ? JSON.parse(row.tracks) : [];
-                            } catch (e) {
-                                return []; 
-                            }
-                        })()
+                        tracks: tracks
                     });
                 } else {
                     this.sheetQueue.push({ artist: row.Artist, title: row.Album });
@@ -1290,6 +1298,7 @@ const app = {
         };
 
         this.db.forEach(c => {
+            // MODIFIED: Ensure JSON stringify happens even if empty, for consistency
             const tracksStr = (c.tracks && c.tracks.length > 0) ? JSON.stringify(c.tracks) : "[]";
             
             const row = [
