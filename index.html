@@ -210,6 +210,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            transition: margin-top 0.3s ease; /* ADDED: Smooth scrolling for sidebar */
         }
         #tracklist-container {
             flex-grow: 1;
@@ -803,7 +804,7 @@ const app = {
             <div class="sidebar-links-container">${linksHtml}</div>
         `;
         
-        // Enable Update Image button (now always enabled if an album is selected, even without ID)
+        // Enable Update Image button if album has an ID
         this.elements.updateImageBtn.disabled = false;
     },
 
@@ -818,6 +819,8 @@ const app = {
         this.selectedIdx = idx;
         this.renderGrid(); 
         this.renderSidebar();
+        // ADDED: Align sidebar to the selected album card
+        this.alignSidebar();
     },
 
     /**
@@ -843,7 +846,37 @@ const app = {
         }
         
         this.sortAndRender(); 
-        this.renderSidebar(); 
+        // this.renderSidebar(); // Already called in sortAndRender if selectedIdx matches, or else it renders empty.
+        // Actually sortAndRender calls renderSidebar if no selection.
+    },
+
+    // --- Sidebar Alignment Logic ---
+    alignSidebar() {
+        // Reset margin first to ensure accurate measurements
+        this.elements.sidebar.style.marginTop = '0px';
+        
+        if (this.selectedIdx === -1) return;
+
+        const card = document.getElementById(`album-card-${this.selectedIdx}`);
+        if (!card) return;
+
+        // Check for mobile/stacked layout
+        // If sidebar top is significantly below grid top, we are likely wrapped
+        // Using a threshold of 50px to be safe
+        if (this.elements.sidebar.offsetTop > this.elements.grid.offsetTop + 50) {
+            return;
+        }
+
+        // Adjust for sidebar padding to align content visually with card
+        // Sidebar padding-top is 20px. 
+        // We want the visual top of content to match visual top of card.
+        // card.offsetTop includes margin? no usually. 
+        // Let's try matching offsets directly first.
+        // card.offsetTop is relative to albumGrid container.
+        
+        const alignPos = Math.max(0, card.offsetTop - 20);
+        
+        this.elements.sidebar.style.marginTop = `${alignPos}px`;
     },
 
     // --- Google Sheet & API Processing ---
@@ -1129,6 +1162,7 @@ const app = {
         if (this.selectedIdx < 0 || this.selectedIdx >= this.db.length) {
             this.selectedIdx = -1;
             this.renderSidebar(); // Render empty sidebar
+            this.alignSidebar(); // Reset alignment
         } else {
             // Re-select the card (necessary to maintain selection highlight)
             const card = document.getElementById(`album-card-${this.selectedIdx}`);
@@ -1136,6 +1170,7 @@ const app = {
                 card.classList.add('selected');
             }
             this.renderSidebar(); // Render sidebar for selected item
+            this.alignSidebar(); // Align to card
         }
     },
 
