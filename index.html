@@ -374,7 +374,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 15px;
-            max-height: 70vh;
+            max-height: 60vh; /* Reduced height to make room for bottom section */
             overflow-y: auto;
             padding: 10px;
             margin-top: 20px;
@@ -411,6 +411,23 @@
         .cover-art-preview .dim {
             font-size: 0.8em;
             color: #888;
+        }
+        
+        /* Manual Input Section */
+        .modal-manual-input {
+            border-top: 1px solid #444;
+            margin-top: 20px;
+            padding-top: 20px;
+        }
+        .modal-manual-input h4 {
+            margin-top: 0;
+            color: var(--gold);
+        }
+        .google-btn {
+            background-color: #4285F4;
+        }
+        .google-btn:hover {
+            background-color: #357ae8;
         }
 
     </style>
@@ -506,6 +523,23 @@
             <h3>Select New Cover Art</h3>
             <div id="coverArtModalGrid">
                 <!-- Image previews will be loaded here -->
+            </div>
+            
+            <!-- NEW SECTION: Manual Search/Input -->
+            <div class="modal-manual-input">
+                <h4>Can't find it?</h4>
+                <div style="margin-bottom: 15px;">
+                    <button onclick="app.searchGoogleImages()" class="google-btn">
+                        <!-- Google Icon SVG -->
+                        <svg viewBox="0 0 24 24" width="18" height="18" style="margin-right:8px; vertical-align: text-bottom;"><path fill="currentColor" d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.23-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.64 2 12.23 2C6.47 2 2 6.48 2 12s4.47 10 10.23 10c5.99 0 9.75-3.96 9.62-9.54a10.3 10.3 0 0 0-.5-1.36z"/></svg>
+                        Search Google Images
+                    </button>
+                </div>
+                <p>Copy the image address (URL) you found and paste it here:</p>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="customImageUrlInput" placeholder="https://example.com/image.jpg">
+                    <button onclick="app.applyCustomImage()">Save URL</button>
+                </div>
             </div>
         </div>
     </div>
@@ -634,7 +668,8 @@ const app = {
         coverArtModalGrid: document.getElementById('coverArtModalGrid'),
         coverArtModalClose: document.getElementById('coverArtModalClose'),
         sheetNameInput: document.getElementById('sheetNameInput'),
-        albumCount: document.getElementById('albumCount')
+        albumCount: document.getElementById('albumCount'),
+        customImageUrlInput: document.getElementById('customImageUrlInput') // Added
     },
 
     // --- Utility Functions ---
@@ -768,8 +803,8 @@ const app = {
             <div class="sidebar-links-container">${linksHtml}</div>
         `;
         
-        // Enable Update Image button if album has an ID
-        this.elements.updateImageBtn.disabled = !album.id;
+        // Enable Update Image button (now always enabled if an album is selected, even without ID)
+        this.elements.updateImageBtn.disabled = false;
     },
 
     /**
@@ -1184,14 +1219,13 @@ const app = {
         if (this.selectedIdx === -1) return;
         
         const album = this.db[this.selectedIdx];
-        if (!album.id) {
-            this.setStatus("This album doesn't have a MusicBrainz ID to search for more art.");
-            return;
-        }
+        // Removed check for album.id so manual search is always possible
+        // if (!album.id) { ... }
 
         const grid = this.elements.coverArtModalGrid;
-        grid.innerHTML = '<p>Loading images...</p>';
+        grid.innerHTML = '<p>Loading images from Archive...</p>';
         this.elements.coverArtModal.style.display = 'block';
+        this.elements.customImageUrlInput.value = ''; // Reset custom input
 
         // Add the current image as the first option
         grid.innerHTML = `
@@ -1202,38 +1236,64 @@ const app = {
             </div>
         `;
         
-        try {
-            const data = await api.fetchAllCoverArt(album.id);
-            if (data && data.images) {
-                data.images.forEach(image => {
-                    // Don't re-add the "front" image if we already have it
-                    if (image.types.includes('Front') && (image.image === album.img || image.thumbnails['500'] === album.img)) {
-                        return;
-                    }
+        if (album.id) {
+            try {
+                const data = await api.fetchAllCoverArt(album.id);
+                if (data && data.images) {
+                    data.images.forEach(image => {
+                        // Don't re-add the "front" image if we already have it
+                        if (image.types.includes('Front') && (image.image === album.img || image.thumbnails['500'] === album.img)) {
+                            return;
+                        }
 
-                    const imgUrl = image.thumbnails.small || image.image;
-                    const fullImageUrl = image.image;
-                    const types = image.types.join(', ');
-                    const dimensions = image.dimensions ? `${image.dimensions.width}x${image.dimensions.height}` : 'Dimensions unknown';
+                        const imgUrl = image.thumbnails.small || image.image;
+                        const fullImageUrl = image.image;
+                        const types = image.types.join(', ');
+                        const dimensions = image.dimensions ? `${image.dimensions.width}x${image.dimensions.height}` : 'Dimensions unknown';
 
-                    const previewEl = document.createElement('div');
-                    previewEl.className = 'cover-art-preview';
-                    previewEl.innerHTML = `
-                        <img src="${imgUrl}" alt="${types}">
-                        <p>${types}</p>
-                        <p class="dim">${dimensions}</p>
-                    `;
-                    previewEl.onclick = () => this.updateAlbumImage(fullImageUrl);
-                    grid.appendChild(previewEl);
-                });
+                        const previewEl = document.createElement('div');
+                        previewEl.className = 'cover-art-preview';
+                        previewEl.innerHTML = `
+                            <img src="${imgUrl}" alt="${types}">
+                            <p>${types}</p>
+                            <p class="dim">${dimensions}</p>
+                        `;
+                        previewEl.onclick = () => this.updateAlbumImage(fullImageUrl);
+                        grid.appendChild(previewEl);
+                    });
+                }
+            } catch (e) {
+                console.warn(`Could not fetch more images: ${e.message}`);
+                if (grid.children.length === 1) {
+                    grid.innerHTML += "<p>No other images found on Cover Art Archive.</p>";
+                }
             }
-        } catch (e) {
-            // This is not a critical error, just means no *other* images were found
-            console.warn(`Could not fetch more images: ${e.message}`);
-            if (grid.children.length === 1) { // Only the "current" image is in there
-                grid.innerHTML += "<p>No other images found on Cover Art Archive.</p>";
-            }
+        } else {
+             grid.innerHTML += "<p>No MusicBrainz ID found. Use manual search below.</p>";
         }
+    },
+
+    /**
+     * Opens a Google Image search in a new tab
+     */
+    searchGoogleImages() {
+        if (this.selectedIdx === -1) return;
+        const album = this.db[this.selectedIdx];
+        const query = `${album.artist} ${album.title} album cover art`;
+        const url = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}`;
+        window.open(url, '_blank');
+    },
+
+    /**
+     * Applies the custom image URL from the input field
+     */
+    applyCustomImage() {
+        const url = this.elements.customImageUrlInput.value.trim();
+        if (!url) {
+            alert("Please paste an image URL first.");
+            return;
+        }
+        this.updateAlbumImage(url);
     },
 
     /**
