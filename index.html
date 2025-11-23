@@ -87,6 +87,7 @@
             align-items: flex-start;
             gap: 20px;
             margin-top: 20px;
+            position: relative; /* Helps with alignment context */
         }
         #albumGrid {
             flex: 3;
@@ -210,7 +211,8 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            transition: margin-top 0.3s ease; /* ADDED: Smooth scrolling for sidebar */
+            /* Smoother transition for the sliding effect */
+            transition: margin-top 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); 
         }
         #tracklist-container {
             flex-grow: 1;
@@ -852,31 +854,55 @@ const app = {
 
     // --- Sidebar Alignment Logic ---
     alignSidebar() {
-        // Reset margin first to ensure accurate measurements
-        this.elements.sidebar.style.marginTop = '0px';
+        // We don't reset margin here to avoid jumping during transition.
+        // Calculations based on getBoundingClientRect are robust against current margin.
         
-        if (this.selectedIdx === -1) return;
-
-        const card = document.getElementById(`album-card-${this.selectedIdx}`);
-        if (!card) return;
-
-        // Check for mobile/stacked layout
-        // If sidebar top is significantly below grid top, we are likely wrapped
-        // Using a threshold of 50px to be safe
-        if (this.elements.sidebar.offsetTop > this.elements.grid.offsetTop + 50) {
-            return;
+        if (this.selectedIdx === -1) {
+             this.elements.sidebar.style.marginTop = '0px';
+             return;
         }
 
-        // Adjust for sidebar padding to align content visually with card
-        // Sidebar padding-top is 20px. 
-        // We want the visual top of content to match visual top of card.
-        // card.offsetTop includes margin? no usually. 
-        // Let's try matching offsets directly first.
-        // card.offsetTop is relative to albumGrid container.
+        const card = document.getElementById(`album-card-${this.selectedIdx}`);
+        const grid = this.elements.grid;
+        const sidebar = this.elements.sidebar;
         
-        const alignPos = Math.max(0, card.offsetTop - 20);
+        if (!card || !grid || !sidebar) return;
+
+        const gridRect = grid.getBoundingClientRect();
+        const sidebarRect = sidebar.getBoundingClientRect();
+        const cardRect = card.getBoundingClientRect();
+
+        // 1. Detect Mobile/Wrapped Layout
+        // If the sidebar is essentially at the same X position as the grid (stacked),
+        // or if the window width is small, we disable this behavior.
+        // In a side-by-side layout, sidebar.left should be significantly different from grid.left
+        // However, if the margin is huge, sidebar might be pushed off screen? No.
+        // Simple check: If sidebar is NOT to the right of the grid content, it's likely stacked.
+        // Or check window width if we know the breakpoint. 
+        // Looking at CSS: .main-layout { flex-wrap: wrap; }
+        // Breakpoint isn't fixed.
+        // Check if sidebar is to the right of the grid's vertical centerline?
+        if (sidebarRect.left < gridRect.right && sidebarRect.top > gridRect.bottom - 50) {
+             // Likely wrapped
+             sidebar.style.marginTop = '0px';
+             return;
+        }
+        // Simpler check: do they overlap vertically? 
+        // In row layout, they share vertical space. In column, they don't (sidebar is below).
+        // If sidebar.top (minus current margin) is > grid.bottom, it's wrapped.
+        // Let's rely on a visual check: if card.left and sidebar.left are similar, it's stacked.
+        if (Math.abs(sidebarRect.left - gridRect.left) < 50) {
+             sidebar.style.marginTop = '0px';
+             return;
+        }
+
+        // 2. Calculate Offset
+        // We want the top of the sidebar to align with the top of the selected card.
+        // Formula: Distance from Grid Top to Card Top
+        const relativeOffset = cardRect.top - gridRect.top;
         
-        this.elements.sidebar.style.marginTop = `${alignPos}px`;
+        // apply
+        sidebar.style.marginTop = `${Math.max(0, relativeOffset)}px`;
     },
 
     // --- Google Sheet & API Processing ---
