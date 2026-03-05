@@ -31,16 +31,6 @@
             font-size: 1.2em;
             margin-top: 0;
             color: var(--gold);
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-        #albumCount {
-            font-size: 0.8em;
-            color: var(--text-med);
-            background-color: var(--bg-light);
-            padding: 2px 8px;
-            border-radius: 4px;
         }
         button {
             background: var(--accent);
@@ -51,20 +41,23 @@
             cursor: pointer;
             font-size: 1em;
             margin: 0 5px 5px 0;
-            display: inline-flex; 
-            align-items: center;
-            gap: 8px; 
+            transition: background-color 0.2s, color 0.2s;
         }
         button:hover { background: #0099e6; }
-        button:disabled { background: #555; color: #999; cursor: not-allowed; }
+        button:disabled { background: #555; cursor: not-allowed; }
         button.danger { background: var(--red); }
         button.danger:hover { background: #e64a4a; }
-        button svg {
-            width: 1.1em;
-            height: 1.1em;
-            fill: currentColor;
+
+        button.needs-save {
+            background: var(--gold);
+            color: var(--bg-dark);
+            font-weight: bold;
         }
-        input[type="text"], input[type="url"], input[type="search"] {
+        button.needs-save:hover {
+            background: #ffea60;
+        }
+
+        input[type="text"], input[type="url"] {
             background: var(--bg-light);
             color: var(--text-light);
             border: 1px solid #555;
@@ -83,11 +76,9 @@
         .main-layout {
             display: flex;
             flex-direction: row;
-            flex-wrap: wrap; 
             align-items: flex-start;
             gap: 20px;
             margin-top: 20px;
-            position: relative; /* Helps with alignment context */
         }
         #albumGrid {
             flex: 3;
@@ -98,26 +89,22 @@
             padding: 20px;
             border-radius: 8px;
             min-height: 400px;
-            min-width: 300px; 
         }
-        
-        /* --- Album Card Styles --- */
         .album-card {
             background: var(--bg-light);
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
             border: 2px solid transparent;
             transition: all 0.2s;
-            cursor: pointer;
+            position: relative;
         }
         .album-card.selected {
             border: 2px solid var(--gold);
             box-shadow: 0 0 15px var(--gold);
         }
-        .album-card-image-container {
-            position: relative;
-        }
+        .album-card:hover { transform: translateY(-5px); }
         .album-card img {
             width: 100%;
             height: 150px;
@@ -125,99 +112,80 @@
             display: block;
             background: #555;
         }
-        .album-card-delete-bin {
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            background: rgba(0,0,0,0.6);
-            color: white;
-            border-radius: 4px;
-            padding: 5px;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.2s;
-            z-index: 10;
-        }
-        .album-card:hover .album-card-delete-bin {
-            opacity: 1;
-        }
-        .album-card-delete-bin svg {
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
-            display: block; 
-        }
-        .album-card-text-content {
-            padding: 10px;
-        }
-        .album-card-title {
-            font-size: 0.9em;
-            font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 5px;
-        }
-        .album-card-artist {
-            font-size: 0.8em;
-            color: var(--text-med);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .album-card-row {
+        .card-line {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 5px;
-            margin-bottom: 5px;
+            padding: 0 10px;
+            height: 36px; 
         }
-        .album-card-row-text {
+        .card-text {
+            flex: 1;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            flex-grow: 1;
         }
-        .album-card-logo {
-            flex-shrink: 0;
-            width: 16px;
-            height: 16px;
-            color: #fff;
-            opacity: 0.7;
-            transition: opacity 0.2s;
+        .title-text {
+            font-size: 0.9em;
             font-weight: bold;
+        }
+        .artist-text {
             font-size: 0.8em;
-            text-decoration: none;
-            line-height: 16px; /* Align Plex text */
+            color: var(--text-med);
         }
-        .album-card-logo svg {
-            width: 100%;
-            height: 100%;
-            fill: currentColor;
+        .card-link {
+            flex-shrink: 0;
+            margin-left: 5px;
+            display: flex;
+            align-items: center;
         }
-        .album-card-logo:hover {
-            opacity: 1;
+        .card-logo {
+            width: 18px;
+            height: 18px;
+            fill: var(--text-med);
+            transition: fill 0.2s;
         }
-        /* --- End Card Styles --- */
-
+        .card-link:hover .card-logo {
+            fill: var(--accent);
+        }
+        
+        .delete-icon {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            transform: none;
+            z-index: 10;
+            fill: var(--text-med);
+            width: 20px;
+            height: 20px;
+            opacity: 0.6;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 4px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 4px;
+        }
+        .album-card:hover .delete-icon {
+            opacity: 1.0;
+        }
+        .delete-icon:hover {
+            fill: var(--red);
+            transform: scale(1.1);
+            background: rgba(0, 0, 0, 0.6);
+        }
+        
         #trackSidebar {
             flex: 1;
             min-width: 300px;
-            max-height: 600px;
             background: var(--bg-dark);
             padding: 20px;
             border-radius: 8px;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            /* Smoother transition for the sliding effect */
-            transition: margin-top 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            position: sticky;
+            top: 20px; 
+            max-height: calc(100vh - 40px); 
         }
-        #tracklist-container {
-            flex-grow: 1;
-            overflow-y: auto;
-        }
+
         #trackSidebar ol {
             padding-left: 25px;
             margin: 0;
@@ -231,65 +199,13 @@
             font-size: 0.9em;
             margin-bottom: 10px;
         }
-        
-        /* --- Sidebar Links --- */
-        .sidebar-links-container {
-            flex-shrink: 0; 
-            margin-top: 20px;
-        }
-        .sidebar-links {
-            padding-top: 15px;
-            border-top: 1px solid var(--bg-light);
-        }
-        
-        .sidebar-wiki-box {
-            background: #fff;
-            color: #000;
-            border-radius: 5px;
-            padding: 15px;
-            margin-top: 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-family: "Linux Libertine", "Georgia", "Times", serif;
-        }
-        .sidebar-wiki-box svg {
-            width: 30px;
-            height: 30px;
-            flex-shrink: 0;
-        }
-        .sidebar-wiki-box-text {
-            overflow: hidden;
-        }
-        .sidebar-wiki-box-text h4 {
-            font-size: 1.1em;
-            color: #000;
-            font-weight: bold;
-            margin: 0 0 5px 0;
-            border: none;
-            padding: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .sidebar-wiki-box-text a {
-            color: #0645ad; 
-            text-decoration: none;
-            font-size: 0.9em;
-        }
-        .sidebar-wiki-box-text a:hover {
-            text-decoration: underline;
-        }
-        /* --- End Sidebar Links --- */
-        
         .panel {
             background: var(--bg-dark);
             padding: 15px 20px;
             border-radius: 8px;
         }
-        .panel-row { display: flex; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 5px; }
-        .panel-row label { margin-right: 10px; font-weight: bold; margin-bottom: 5px; } 
-        .panel-row input { flex: 1; min-width: 250px; }
+        .panel-row { display: flex; align-items: center; margin-bottom: 10px; }
+        .panel-row label { margin-right: 10px; font-weight: bold; min-width: 100px; }
         #status {
             font-size: 1.1em;
             margin-top: 10px;
@@ -309,209 +225,227 @@
             margin-top: 10px;
         }
         
-        /* A-Z Navigation Bar */
-        #alphaNav {
+        #az-breadcrumb {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
-            gap: 4px;
-            padding: 10px;
-            background: var(--bg-dark);
-            border-radius: 8px;
-            margin-top: 20px;
+            gap: 5px;
+            padding-top: 10px;
         }
-        #alphaNav span {
+        .az-letter {
+            background: var(--bg-light);
+            color: var(--text-light);
             padding: 5px 10px;
-            font-size: 1.1em;
-            font-weight: bold;
-            color: var(--accent); 
-            cursor: pointer;
             border-radius: 4px;
-            transition: background-color 0.2s, color 0.2s;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9em;
+            transition: background 0.2s;
+            user-select: none;
         }
-        #alphaNav span:not(.disabled) {
-            color: var(--gold);
-        }
-        #alphaNav span:hover:not(.disabled) {
-            background-color: var(--bg-light);
-        }
-        #alphaNav span.disabled {
-            color: #555;
-            cursor: not-allowed;
-            text-decoration: line-through;
+        .az-letter:hover {
+            background: var(--accent);
+            color: white;
         }
 
-        /* --- Cover Art Modal Styles --- */
-        #coverArtModal {
-            display: none; 
+        .modal-overlay {
             position: fixed;
-            z-index: 1000;
-            left: 0;
             top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            overflow-y: auto;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
         }
         .modal-content {
-            background-color: var(--bg-dark);
-            margin: 5% auto;
+            background: var(--bg-light);
             padding: 20px;
             border-radius: 8px;
             width: 80%;
-            max-width: 900px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
         }
-        .modal-close-btn {
-            color: var(--text-med);
-            float: right;
-            font-size: 28px;
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.8em;
             font-weight: bold;
+            color: var(--text-med);
             cursor: pointer;
-            line-height: 1;
         }
-        .modal-close-btn:hover {
+        .modal-close:hover {
             color: var(--text-light);
         }
-        #coverArtModalGrid {
+        #modalImageGrid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 15px;
-            max-height: 60vh; /* Reduced height to make room for bottom section */
-            overflow-y: auto;
-            padding: 10px;
             margin-top: 20px;
-            background: var(--bg-main);
-            border-radius: 5px;
         }
-        .cover-art-preview {
-            cursor: pointer;
-            border: 2px solid transparent;
-            border-radius: 5px;
+        .modal-image-item {
+            background: var(--bg-dark);
+            border-radius: 4px;
             overflow: hidden;
-            background: var(--bg-light);
+            border: 2px solid transparent;
             transition: border 0.2s;
         }
-        .cover-art-preview:hover {
+        .modal-image-item:hover {
             border: 2px solid var(--gold);
         }
-        .cover-art-preview img {
+        .modal-image-item img {
             width: 100%;
-            height: 150px;
             object-fit: cover;
+            height: 150px;
+            cursor: pointer;
             display: block;
         }
-        .cover-art-preview p {
-            text-align: center;
+        .modal-image-item p {
+            font-size: 0.8em;
             color: var(--text-med);
-            font-size: 0.9em;
-            margin: 5px 0;
-            padding: 0 5px;
+            text-align: center;
+            margin: 8px;
+            padding: 0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .cover-art-preview .dim {
-            font-size: 0.8em;
-            color: #888;
+
+        #modalAlbumList {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .album-select-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: var(--bg-dark);
+            border-radius: 4px;
+        }
+        .album-select-item-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .album-select-item-info strong {
+            font-size: 1.1em;
+            color: var(--text-light);
+        }
+        .album-select-item-info span {
+            font-size: 0.9em;
+            color: var(--text-med);
+        }
+        .album-select-item button {
+            padding: 5px 10px;
+            font-size: 0.9em;
+            margin: 0;
         }
         
-        /* Manual Input Section */
-        .modal-manual-input {
-            border-top: 1px solid #444;
+        .wiki-container {
             margin-top: 20px;
-            padding-top: 20px;
+            border-top: 1px solid var(--bg-light);
+            padding: 15px;
+            background-color: white;
+            color: black;
+            border-radius: 8px; 
         }
-        .modal-manual-input h4 {
-            margin-top: 0;
-            color: var(--gold);
+        .wiki-header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
         }
-        .google-btn {
-            background-color: #4285F4;
+        .wiki-logo {
+            width: 40px; 
+            height: 40px;
         }
-        .google-btn:hover {
-            background-color: #357ae8;
+        .wiki-title {
+            font-family: Georgia, 'Linux Libertine', 'Times New Roman', serif;
+            font-size: 1.5em;
+            font-weight: normal;
+            color: black;
+            margin-bottom: 0;
+            text-align: left;
+        }
+        .wiki-container .wiki-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .wiki-container .wiki-link:hover {
+            text-decoration: underline;
         }
 
     </style>
 </head>
 <body>
 
-    <!-- SVG Definitions for Icons -->
-    <svg style="display:none;">
-        <symbol id="icon-bin" viewBox="0 0 448 512">
-            <path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zM176 208c-8.8 0-16 7.2-16 16V416c0 8.8 7.2 16 16 16s16-7.2 16-16V224c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V416c0 8.8 7.2 16 16 16s16-7.2 16-16V224c0-8.8-7.2-16-16-16z"/>
-        </symbol>
-        <symbol id="icon-tidal" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M12 0L2.75 5.375V18.625L12 24l9.25-5.375V5.375L12 0zm0 1.75L20.25 6.5v11L12 22.25l-8.25-4.75v-11L12 1.75zM3.875 6.125L12 10.5l8.125-4.375L12 1.75 3.875 6.125zM12 11.5L3.75 7v10l8.25 4.75v-10.25zm8.25-4.5V17L12 21.75v-10.25L20.25 7z"/>
-        </symbol>
-        <symbol id="icon-amazon" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M12.23 15.68c.28-.15.7-.35 1.31-.61s1.17-.5 1.63-.68c.45-.18.77-.32.96-.38.2-.07.4-.15.6-.25.2-.1.35-.22.46-.36.12-.14.17-.3.17-.48 0-.1-.02-.2-.06-.3-.04-.1-.1-.18-.18-.24s-.18-.1-.3-.12c-.1-.02-.23-.03-.38-.03-.23 0-.46.02-.68.05-.22.03-.43.08-.62.15-.2.07-.38.16-.54.26s-.28.24-.38.38l-.62-.92c.18-.2.38-.38.62-.53.24-.15.5-.28.78-.38.28-.1.58-.17.9-.22.32-.05.66-.07 1.02-.07.65 0 1.22.1 1.7.3.48.2.88.48 1.2.85.32.37.48.82.48 1.35 0 .3-.05.6-.14.88-.1.28-.24.55-.42.8-.18.25-.42.5-.72.72-.3.23-.65.45-1.05.66-.32.17-.68.34-1.1.5s-.82.34-1.2.5c-.4.18-.7.35-.92.5-.22.15-.33.32-.33.52 0 .15.05.28.14.38.1.1.23.15.4.15.2 0 .4-.04.58-.12.18-.08.35-.18.48-.3l.65.9c-.2.22-.42.42-.68.57-.26.15-.55.28-.88.36-.32.08-.68.12-1.08.12-.6 0-1.1-.1-1.5-.3s-.7-.5-1-.88c-.3-.37-.44-.8-.44-1.3 0-.3.05-.6.15-.88.1-.28.25-.54.45-.78.2-.24.45-.45.75-.63zM8.3 19.3c.6-.6 1-1.3 1.2-2.1.2-.8.3-1.6.3-2.4s-.1-1.6-.3-2.4c-.2-.8-.6-1.5-1.2-2.1-.6-.6-1.3-1-2.1-1.2-.8-.2-1.6-.3-2.4-.3-1.3 0-2.6.4-3.8 1.1C-.8 10.8-1.5 12-2 13.4c-.4 1.4-.6 2.8-.6 4.3s.2 2.9.6 4.3c.5 1.4 1.2 2.6 2.1 3.8.9 1.2 2 2.1 3.4 2.8.3.1.6.2.9.2.4 0 .7 0 .9-.1.2 0 .4-.1.6-.2.4-.1.8-.3 1.1-.5.3-.2.6-.4.8-.7s.4-.6.6-.9c.2-.3.3-.7.3-1.1 0-.3-.1-.5-.2-.7s-.2-.4-.4-.5c-.2-.1-.4-.2-.6-.2-.3 0-.5.1-.7.2-.2.1-.4.3-.5.5-.1.2-.2.4-.3.6-.1.2-.2.4-.3.5-.1.1-.3.2-.5.3-.2.1-.4.1-.6.1-.5 0-.9-.1-1.3-.3-.4-.2-.8-.5-1.1-.8-.3-.3-.6-.7-.8-1.1-.2-.4-.3-.8-.3-1.2s.1-.8.3-1.2c.2-.4.4-.7.8-1.1.3-.3.7-.6 1.1-.8.4-.2.8-.3 1.3-.3.4 0 .8.1 1.2.3.4.2.7.4 1 .8.3.3.5.7.6 1.1.1.4.2.8.2 1.2s-.1.8-.2 1.2c-.1.4-.3.7-.6 1.1-.2.3-.5.5-.8.7-.3.2-.6.3-1.1.3h-.1c-.1 0-.3 0-.4.1s-.3.1-.4.2c-.1.1-.2.2-.3.4s-.1.3-.1.5c0 .4.1.7.4.9.3.2.6.4.9.6s.6.3 1 .4c.1.1.3.1.5.1.2 0 .4 0 .6-.1s.4-.1.6-.2c.2 0 .4-.1.6-.2z"/>
-        </symbol>
-        <symbol id="icon-wiki" viewBox="0 0 512 512">
-            <path fill="#000" d="M333.6 200.5c-3.6-6.3-10.9-10.4-18.7-10.4s-15.1 4.1-18.7 10.4L256 280.8l-40.2-80.3c-3.6-6.3-10.9-10.4-18.7-10.4s-15.1 4.1-18.7 10.4L137.6 301.1l-22-44.4c-3.6-6.3-10.9-10.4-18.7-10.4s-15.1 4.1-18.7 10.4L0 416h112.5l22.6-45.7 40.2 80.3c3.6 6.3 10.9 10.4 18.7 10.4s15.1-4.1 18.7-10.4L256 370.4l40.2 80.3c3.6 6.3 10.9 10.4 18.7 10.4s15.1-4.1 18.7-10.4l40.2-80.3 22.6 45.7H512L431.2 246.5c-3.6-6.3-10.9-10.4-18.7-10.4s-15.1 4.1-18.7 10.4L374.4 277l-40.8-76.5z"/>
-        </symbol>
-    </svg>
-    
     <div class="container">
         <h2>CD Collection</h2>
 
-        <!-- Google Sheet Panel -->
         <div class="panel">
             <h3>Google Sheet Import</h3>
             <div class="panel-row">
-                <label for="sheetUrl" style="min-width: 120px;">Public Sheet URL:</label>
-                <input type="url" id="sheetUrl" style="flex: 2;" placeholder="Paste your full Google Sheet URL here">
-                <label for="sheetNameInput" style="min-width: 80px; margin-left: 10px;">Tab Name:</label>
-                <input type="text" id="sheetNameInput" style="flex: 1;" placeholder="e.g., Sheet1">
+                <label for="sheetUrl">Public Sheet URL:</label>
+                <input type="url" id="sheetUrl" size="60" placeholder="Paste your 'Publish to the web' .../pub?output=tsv link">
             </div>
             <button onclick="app.loadFromGoogleSheet()">1. Load from Google Sheet</button>
             <button onclick="app.processSheetQueue()">2. Find Album Info</button>
             <div id="status"></div>
         </div>
 
-        <!-- Manual Add / DB Management Panel -->
         <div class="panel">
-            <h3>
-                Manage Collection
-                <span id="albumCount">Total: 0</span>
-            </h3>
-            <div class="panel-row">
+            <h3>Manage Collection</h3>
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="barcodeInput" placeholder="Scan or enter barcode...">
+                <button onclick="app.barcodeSearch()">Search Barcode</button>
+            </div>
+            <div>
                 <input type="text" id="artistInput" placeholder="Artist name">
                 <input type="text" id="albumInput" placeholder="Album title">
-                <button onclick="app.manualSearch()">Add by Title</button>
-            </div>
-            <div class="panel-row">
-                <input type="search" id="barcodeInput" placeholder="Enter Barcode (EAN/UPC)">
-                <button onclick="app.barcodeSearch()">Add by Barcode</button>
+                <button onclick="app.manualSearch()">Add Manually</button>
             </div>
             <div style="margin-top: 15px;">
                 <button onclick="document.getElementById('csvInput').click()">Import from CSV</button>
                 <button onclick="app.exportToCSV()">Export to CSV</button>
                 <button onclick="document.getElementById('jsonInput').click()">Import from JSON</button>
-                <button onclick="app.exportDB()">Export to JSON</button>
-                <button id="updateImageBtn" onclick="app.openCoverArtModal()">Update Image</button>
+                <button id="exportBtn" onclick="app.exportDB()">Export to JSON</button>
+                <button id="updateImageBtn" onclick="app.showImageUpdater()" disabled>Update Image</button>
+                <button id="deleteBtn" class="danger" onclick="app.deleteCurrentAlbum()" disabled>Delete Selected</button>
+                <button onclick="app.clearLocalStorage()" class="danger">Reset Local App</button>
             </div>
         </div>
         
-        <!-- Hidden file inputs -->
+        <div class="panel">
+            <h3>
+                Artist A-Z
+                <span id="albumCountTotal" style="float: right; font-size: 0.8em; font-weight: normal;">(Total: 0)</span>
+            </h3>
+            <div id="az-breadcrumb">
+                </div>
+        </div>
+        
         <input type="file" id="csvInput" accept=".csv" onchange="app.handleCSVUpload(event)">
         <input type="file" id="jsonInput" accept=".json" onchange="app.handleJSONUpload(event)">
 
-        <!-- A-Z Navigation -->
-        <div id="alphaNav"></div>
-
-        <!-- Main Display -->
         <div class="main-layout">
             <div id="albumGrid">
-                <!-- Album cards will be inserted here -->
-            </div>
+                </div>
             <div id="trackSidebar">
-                <!-- Sidebar content will be rendered here -->
+                <h3>Select an Album</h3>
+                <p>Click an album on the left to see its tracklist.</p>
             </div>
         </div>
 
-        <!-- Log Panel -->
         <div class="panel">
             <h3>Processing Log</h3>
             <button onclick="app.clearFailedLog()">Clear Failed Log</button>
@@ -519,31 +453,21 @@
         </div>
     </div>
 
-    <!-- Cover Art Modal -->
-    <div id="coverArtModal">
+    <div id="imageModal" class="modal-overlay">
         <div class="modal-content">
-            <span class="modal-close-btn" id="coverArtModalClose">&times;</span>
+            <span class="modal-close" onclick="app.closeImageUpdater()">&times;</span>
             <h3>Select New Cover Art</h3>
-            <div id="coverArtModalGrid">
-                <!-- Image previews will be loaded here -->
-            </div>
-            
-            <!-- NEW SECTION: Manual Search/Input -->
-            <div class="modal-manual-input">
-                <h4>Can't find it?</h4>
-                <div style="margin-bottom: 15px;">
-                    <button onclick="app.searchGoogleImages()" class="google-btn">
-                        <!-- Google Icon SVG -->
-                        <svg viewBox="0 0 24 24" width="18" height="18" style="margin-right:8px; vertical-align: text-bottom;"><path fill="currentColor" d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.23-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.64 2 12.23 2C6.47 2 2 6.48 2 12s4.47 10 10.23 10c5.99 0 9.75-3.96 9.62-9.54a10.3 10.3 0 0 0-.5-1.36z"/></svg>
-                        Search Google Images
-                    </button>
+            <div id="modalImageGrid">
                 </div>
-                <p>Copy the image address (URL) you found and paste it here:</p>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="customImageUrlInput" placeholder="https://example.com/image.jpg">
-                    <button onclick="app.applyCustomImage()">Save URL</button>
+        </div>
+    </div>
+
+    <div id="albumSelectModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" onclick="app.closeAlbumSelectModal()">&times;</span>
+            <h3 id="albumSelectTitle">Select Album</h3>
+            <div id="modalAlbumList">
                 </div>
-            </div>
         </div>
     </div>
 
@@ -554,7 +478,7 @@
 const api = {
     requestQueue: [],
     isProcessing: false,
-    REQUEST_DELAY: 1100, // 1.1 seconds to be safe
+    REQUEST_DELAY: 1100, 
 
     throttledFetch(url, options = {}) {
         return new Promise((resolve, reject) => {
@@ -570,54 +494,49 @@ const api = {
             this.isProcessing = false;
             return;
         }
+
         this.isProcessing = true;
         const { url, options, resolve, reject } = this.requestQueue.shift();
+
         try {
             const response = await fetch(url, options);
             resolve(response);
         } catch (error) {
             reject(error);
         }
+
         setTimeout(() => this.processQueue(), this.REQUEST_DELAY);
     },
 
-    async searchReleaseByTitle(artist, title) {
+    async searchRelease(artist, title) {
         const query = `release:"${encodeURIComponent(title)}" AND artist:"${encodeURIComponent(artist)}"`;
         const url = `https://musicbrainz.org/ws/2/release/?query=${query}&fmt=json&limit=5`;
-        try {
-            const response = await this.throttledFetch(url);
-            if (!response.ok) throw new Error(`MusicBrainz search failed: ${response.status}`);
-            return await response.json();
-        } catch (e) {
-            console.error('searchRelease error:', e);
-            throw e;
-        }
+        const response = await this.throttledFetch(url);
+        if (!response.ok) throw new Error(`MusicBrainz search failed: ${response.status}`);
+        return await response.json();
     },
 
-    async searchReleaseByBarcode(barcode) {
+    async searchByBarcode(barcode) {
         const query = `barcode:${encodeURIComponent(barcode)}`;
         const url = `https://musicbrainz.org/ws/2/release/?query=${query}&fmt=json&limit=5`;
-        try {
-            const response = await this.throttledFetch(url);
-            if (!response.ok) throw new Error(`MusicBrainz barcode search failed: ${response.status}`);
-            return await response.json();
-        } catch (e) {
-            console.error('searchReleaseByBarcode error:', e);
-            throw e;
-        }
+        const response = await this.throttledFetch(url);
+        if (!response.ok) throw new Error(`MusicBrainz barcode search failed: ${response.status}`);
+        return await response.json();
     },
 
-    // MODIFIED: Added '+media' to ensure track data is robustly fetched
+    async searchReleasesByArtist(artistName) {
+        const query = `artist:"${encodeURIComponent(artistName)}" AND (type:album OR type:ep) AND status:official`;
+        const url = `https://musicbrainz.org/ws/2/release/?query=${query}&fmt=json&limit=25`;
+        const response = await this.throttledFetch(url);
+        if (!response.ok) throw new Error(`MusicBrainz artist search failed: ${response.status}`);
+        return await response.json();
+    },
+
     async fetchReleaseDetails(mbid) {
-        const url = `https://musicbrainz.org/ws/2/release/${mbid}?inc=recordings+media&fmt=json`;
-        try {
-            const response = await this.throttledFetch(url);
-            if (!response.ok) throw new Error(`MusicBrainz tracks failed: ${response.status}`);
-            return await response.json();
-        } catch (e) {
-            console.error('fetchReleaseDetails error:', e);
-            throw e;
-        }
+        const url = `https://musicbrainz.org/ws/2/release/${mbid}?inc=recordings&fmt=json`;
+        const response = await this.throttledFetch(url);
+        if (!response.ok) throw new Error(`MusicBrainz tracks failed: ${response.status}`);
+        return await response.json();
     },
 
     async fetchCoverArtUrl(mbid) {
@@ -633,46 +552,92 @@ const api = {
         }
     },
 
-    async fetchAllCoverArt(mbid) {
+    async fetchReleaseImages(mbid) {
         const url = `https://coverartarchive.org/release/${mbid}`;
         try {
             const response = await this.throttledFetch(url);
-            if (!response.ok) {
-                throw new Error(`Cover Art Archive failed: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`Cover Art Archive search failed: ${response.status}`);
+            const data = await response.json();
+            return data.images || [];
+        } catch (e) {
+            return [];
+        }
+    },
+
+    async searchItunes(artist, title) {
+        const searchTerm = encodeURIComponent(`${artist} ${title}`);
+        const url = `https://itunes.apple.com/search?term=${searchTerm}&entity=album&limit=10`;
+        const proxyUrl = `https://cors-anywhere.herokuapp.com/${url}`;
+        try {
+            const response = await this.throttledFetch(proxyUrl);
+            if (!response.ok) throw new Error(`iTunes search failed: ${response.status}`);
             return await response.json();
         } catch (e) {
-            console.error('fetchAllCoverArt error:', e);
-            throw e;
+            return { results: [] };
         }
-    }
+    },
 };
 
 // -----------------------------------------------------------------
 //  Main Application Logic
 // -----------------------------------------------------------------
 const app = {
-    db: [], 
-    sheetQueue: [], 
+    db: [],
+    sheetQueue: [],
     selectedIdx: -1,
+    isDirty: false,
     
     elements: {
         grid: document.getElementById('albumGrid'),
         sidebar: document.getElementById('trackSidebar'),
         status: document.getElementById('status'),
         failedLog: document.getElementById('failedLogBox'),
+        deleteBtn: document.getElementById('deleteBtn'),
         sheetUrl: document.getElementById('sheetUrl'),
         artistInput: document.getElementById('artistInput'),
         albumInput: document.getElementById('albumInput'),
         barcodeInput: document.getElementById('barcodeInput'),
-        alphaNav: document.getElementById('alphaNav'),
         updateImageBtn: document.getElementById('updateImageBtn'),
-        coverArtModal: document.getElementById('coverArtModal'),
-        coverArtModalGrid: document.getElementById('coverArtModalGrid'),
-        coverArtModalClose: document.getElementById('coverArtModalClose'),
-        sheetNameInput: document.getElementById('sheetNameInput'),
-        albumCount: document.getElementById('albumCount'),
-        customImageUrlInput: document.getElementById('customImageUrlInput') // Added
+        imageModal: document.getElementById('imageModal'),
+        modalImageGrid: document.getElementById('modalImageGrid'),
+        albumSelectModal: document.getElementById('albumSelectModal'),
+        modalAlbumList: document.getElementById('modalAlbumList'),
+        exportBtn: document.getElementById('exportBtn'),
+    },
+
+    // --- NEW: PERSISTENCE FUNCTIONS ---
+    saveToLocalStorage() {
+        try {
+            const data = JSON.stringify(this.db);
+            localStorage.setItem('cd_collection_db', data);
+            console.log("Collection saved to local storage.");
+        } catch (e) {
+            console.error("Local storage save failed:", e);
+        }
+    },
+
+    loadFromLocalStorage() {
+        try {
+            const data = localStorage.getItem('cd_collection_db');
+            if (data) {
+                this.db = JSON.parse(data);
+                console.log(`Loaded ${this.db.length} albums from local storage.`);
+                this.sortAndRender();
+                return true;
+            }
+        } catch (e) {
+            console.error("Local storage load failed:", e);
+        }
+        return false;
+    },
+
+    clearLocalStorage() {
+        if (confirm("This will clear the app data from this browser. Your JSON/CSV files and Google Sheet will remain untouched. Continue?")) {
+            localStorage.removeItem('cd_collection_db');
+            this.db = [];
+            this.sortAndRender();
+            this.setStatus("App reset.");
+        }
     },
 
     // --- Utility Functions ---
@@ -686,23 +651,24 @@ const app = {
         log.scrollTop = log.scrollHeight;
     },
     clearFailedLog() { this.elements.failedLog.textContent = "(No failures yet)"; },
+    
     sortDB() {
         this.db.sort((a, b) => {
-            const artistA = (a.artist || '').toLowerCase().replace(/^(the|a) /i, '');
-            const artistB = (b.artist || '').toLowerCase().replace(/^(the|a) /i, '');
-            return artistA.localeCompare(artistB) || (a.title || '').localeCompare(b.title || '');
+            return (a.artist || '').localeCompare(b.artist || '') || (a.title || '').localeCompare(b.title || '');
         });
     },
-    
-    // --- Core Data & UI Rendering ---
 
-    /**
-     * Renders the entire grid of album covers.
-     */
+    updateSaveStatus() {
+        this.isDirty = true;
+        this.elements.exportBtn.classList.add('needs-save');
+        // --- NEW: AUTO-SAVE TO LOCAL STORAGE ---
+        this.saveToLocalStorage();
+    },
+    
+    // --- UI Rendering ---
     renderGrid() {
+        document.getElementById('albumCountTotal').textContent = `(Total: ${this.db.length})`;
         this.elements.grid.innerHTML = '';
-        this.elements.albumCount.textContent = `Total: ${this.db.length}`; 
-        
         if (this.db.length === 0) {
             this.elements.grid.innerHTML = '<p style="color:#888;">No albums loaded.</p>';
         }
@@ -710,679 +676,316 @@ const app = {
         this.db.forEach((album, idx) => {
             const card = document.createElement('div');
             card.className = 'album-card';
-            card.id = `album-card-${idx}`;
-            if (idx === this.selectedIdx) {
-                card.classList.add('selected');
-            }
+            card.onclick = () => this.selectAlbum(idx);
+            if (idx === this.selectedIdx) card.classList.add('selected');
+            
+            const deleteBtn = document.createElement('div');
+            deleteBtn.className = 'delete-icon';
+            deleteBtn.innerHTML = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
+            deleteBtn.onclick = (event) => {
+                event.stopPropagation();
+                this.deleteAlbumByIndex(idx);
+            };
+            card.appendChild(deleteBtn);
+            
+            const img = document.createElement('img');
+            img.src = album.img || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+            card.appendChild(img);
 
-            const artistEnc = encodeURIComponent(album.artist);
-            const titleEnc = encodeURIComponent(album.title);
-            const amazonUrl = `https://music.amazon.com/search/${artistEnc}+${titleEnc}`;
-            const tidalUrl = `https://tidal.com/search?q=${artistEnc}+${titleEnc}`;
-            const plexUrl = `https://app.plex.tv/desktop/#!/search?query=${artistEnc}%20${titleEnc}`;
+            const tidalUrl = `https://tidal.com/search?q=${encodeURIComponent(album.artist + ' ' + album.title)}&type=albums`;
+            const amazonUrl = `https://music.amazon.com/search/${encodeURIComponent(album.artist + ' ' + album.title)}`;
 
-            // Build the card HTML
-            card.innerHTML = `
-                <div class="album-card-image-container" onclick="app.selectAlbum(${idx})">
-                    <div class="album-card-delete-bin" onclick="app.handleDeleteClick(event, ${idx})">
-                        <svg><use href="#icon-bin"></use></svg>
-                    </div>
-                    <img src="${album.img || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'}" alt="${album.title}">
-                </div>
-                <div class="album-card-text-content">
-                    <div class="album-card-row" onclick="app.selectAlbum(${idx})">
-                        <span class="album-card-row-text album-card-title">${album.title}</span>
-                        <a href="${tidalUrl}" target="_blank" rel="noopener noreferrer" class="album-card-logo" title="TIDAL" onclick="event.stopPropagation()">
-                            <svg><use href="#icon-tidal"></use></svg>
-                        </a>
-                    </div>
-                    <div class="album-card-row" onclick="app.selectAlbum(${idx})">
-                        <span class="album-card-row-text album-card-artist">${album.artist}</span>
-                        <a href="${plexUrl}" target="_blank" rel="noopener noreferrer" class="album-card-logo" title="Plex" onclick="event.stopPropagation()" style="margin-right: 5px;">
-                            Plex
-                        </a>
-                        <a href="${amazonUrl}" target="_blank" rel="noopener noreferrer" class="album-card-logo" title="Amazon" onclick="event.stopPropagation()">
-                            <svg><use href="#icon-amazon"></use></svg>
-                        </a>
-                    </div>
-                </div>
-            `;
+            const titleLine = document.createElement('div');
+            titleLine.className = 'card-line title-line';
+            titleLine.innerHTML = `<span class="card-text title-text">${album.title}</span><a href="${tidalUrl}" class="card-link" target="_blank" onclick="event.stopPropagation();"><svg class="card-logo" viewBox="0 0 24 24"><path d="M4 15V9h2v6H4zm3 2V7h2v10H7zm3-2V9h2v6h-2zm3 2V7h2v10h-2zm3-2V9h2v6h-2z"/></svg></a>`;
+            card.appendChild(titleLine);
+
+            const artistLine = document.createElement('div');
+            artistLine.className = 'card-line artist-line';
+            artistLine.innerHTML = `<span class="card-text artist-text">${album.artist}</span><a href="${amazonUrl}" class="card-link" target="_blank" onclick="event.stopPropagation();"><svg class="card-logo" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM7.5 13.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5S9.83 12 9 12s-1.5.67-1.5 1.5zm9 0c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5-1.5.67-1.5 1.5zm-4.5 1.5c-2.33 0-4.31-1.46-5.11-3.5h10.22c-.8 2.04-2.78 3.5-5.11 3.5z"/></svg></a>`;
+            card.appendChild(artistLine);
             
             this.elements.grid.appendChild(card);
         });
     },
 
-    /**
-     * Renders the sidebar with track info AND links for the selected album.
-     */
     renderSidebar() {
         if (this.selectedIdx === -1 || !this.db[this.selectedIdx]) {
-            this.elements.sidebar.innerHTML = `
-                <div id="tracklist-container">
-                    <h3>Select an Album</h3>
-                    <p>Click an album on the left to see its tracklist.</p>
-                </div>
-                <div class="sidebar-links-container"></div>
-            `;
+            this.elements.sidebar.innerHTML = '<h3>Select an Album</h3><p>Click an album on the left to see its tracklist.</p>';
+            this.elements.deleteBtn.disabled = true;
             this.elements.updateImageBtn.disabled = true;
             return;
         }
 
         const album = this.db[this.selectedIdx];
-        
-        // --- Build Tracklist HTML ---
-        let tracklistHtml = `<h3>${album.title}</h3><p style="margin:0; font-size: 1.1em;">${album.artist}</p>`;
-        if (album.date) {
-            tracklistHtml += `<div class="sidebar-date">Released: ${album.date}</div>`;
-        }
+        let html = `<h3>${album.title}</h3><p style="margin:0; font-size: 1.1em;">${album.artist}</p>`;
+        if (album.date) html += `<div class="sidebar-date">Released: ${album.date}</div>`;
         
         if (!album.tracks || album.tracks.length === 0) {
-            tracklistHtml += '<p style="color:#f66; margin-top: 20px;">No track data found.</p>';
+            html += '<p style="color:#f66; margin-top: 20px;">No track data found.</p>';
         } else {
-            tracklistHtml += '<ol style="margin-top: 20px;">';
-            album.tracks.forEach(t => {
-                tracklistHtml += `<li>${t.number}. ${t.title}</li>`;
-            });
-            tracklistHtml += '</ol>';
+            html += '<ol style="margin-top: 20px;">';
+            album.tracks.forEach(t => html += `<li>${t.number}. ${t.title}</li>`);
+            html += '</ol>';
         }
 
-        // --- Build Links HTML ---
-        const artistEnc = encodeURIComponent(album.artist);
-        const wikiUrl = `https://en.wikipedia.org/w/index.php?search=${artistEnc}`;
-
-        let linksHtml = `
-            <div class="sidebar-wiki-box">
-                <svg><use href="#icon-wiki"></use></svg>
-                <div class="sidebar-wiki-box-text">
-                    <h4>${album.artist}</h4>
-                    <a href="${wikiUrl}" target="_blank" rel="noopener noreferrer">View article on Wikipedia</a>
-                </div>
-            </div>
-        `;
-
-        // Combine all HTML into the sidebar
-        this.elements.sidebar.innerHTML = `
-            <div id="tracklist-container">${tracklistHtml}</div>
-            <div class="sidebar-links-container">${linksHtml}</div>
-        `;
+        const artistName = encodeURIComponent(album.artist.replace(/ /g, '_'));
+        const wikiUrl = `https://en.wikipedia.org/wiki/${artistName}`;
+        html += `<div class="wiki-container"><div class="wiki-header"><img src="https://upload.wikimedia.org/wikipedia/commons/8/80/Wikipedia-logo-v2.svg" class="wiki-logo" alt="Wikipedia Logo"><div class="wiki-title">${album.artist}</div></div><a href="${wikiUrl}" target="_blank" class="wiki-link">View article on Wikipedia</a></div>`;
         
-        // Enable Update Image button if album has an ID
+        this.elements.sidebar.innerHTML = html;
+        this.elements.deleteBtn.disabled = false;
         this.elements.updateImageBtn.disabled = false;
     },
 
-    /**
-     * Handles clicking an album card.
-     * @param {number} idx - The index of the clicked album in the `db` array.
-     */
     selectAlbum(idx) {
-        if (this.selectedIdx === idx) {
-             return;
-        }
         this.selectedIdx = idx;
-        this.renderGrid(); 
+        this.renderGrid();
         this.renderSidebar();
-        // ADDED: Align sidebar to the selected album card
-        this.alignSidebar();
     },
 
-    /**
-     * Handles clicking the delete bin on a card.
-     */
-    handleDeleteClick(event, idx) {
-        event.stopPropagation(); // Stop it from selecting the album
-        this.deleteAlbum(idx);
-    },
-    
-    /**
-     * Deletes an album by its index, updates selection, and re-renders.
-     */
-    deleteAlbum(idx) {
-        if (idx < 0 || idx >= this.db.length) return;
-        
-        this.db.splice(idx, 1);
-        
-        if (this.selectedIdx === idx) {
-            this.selectedIdx = -1; 
-        } else if (this.selectedIdx > idx) {
-            this.selectedIdx--; 
-        }
-        
-        this.sortAndRender(); 
-        // this.renderSidebar(); // Already called in sortAndRender if selectedIdx matches, or else it renders empty.
-        // Actually sortAndRender calls renderSidebar if no selection.
+    deleteCurrentAlbum() {
+        if (this.selectedIdx === -1) return;
+        this.deleteAlbumByIndex(this.selectedIdx);
     },
 
-    // --- Sidebar Alignment Logic ---
-    alignSidebar() {
-        // We don't reset margin here to avoid jumping during transition.
-        // Calculations based on getBoundingClientRect are robust against current margin.
-        
-        if (this.selectedIdx === -1) {
-             this.elements.sidebar.style.marginTop = '0px';
-             return;
+    deleteAlbumByIndex(idx) {
+        const albumName = this.db[idx]?.title || "this album";
+        if (confirm(`Do you want to remove "${albumName}"?`)) {
+            this.db.splice(idx, 1);
+            if (this.selectedIdx === idx) this.selectedIdx = -1;
+            else if (this.selectedIdx > idx) this.selectedIdx--;
+            this.updateSaveStatus();
+            this.renderGrid();
+            this.renderSidebar();
         }
-
-        const card = document.getElementById(`album-card-${this.selectedIdx}`);
-        const grid = this.elements.grid;
-        const sidebar = this.elements.sidebar;
-        
-        if (!card || !grid || !sidebar) return;
-
-        const gridRect = grid.getBoundingClientRect();
-        const sidebarRect = sidebar.getBoundingClientRect();
-        const cardRect = card.getBoundingClientRect();
-
-        // 1. Detect Mobile/Wrapped Layout
-        // If the sidebar is essentially at the same X position as the grid (stacked),
-        // or if the window width is small, we disable this behavior.
-        // In a side-by-side layout, sidebar.left should be significantly different from grid.left
-        // However, if the margin is huge, sidebar might be pushed off screen? No.
-        // Simple check: If sidebar is NOT to the right of the grid content, it's likely stacked.
-        // Or check window width if we know the breakpoint. 
-        // Looking at CSS: .main-layout { flex-wrap: wrap; }
-        // Breakpoint isn't fixed.
-        // Check if sidebar is to the right of the grid's vertical centerline?
-        if (sidebarRect.left < gridRect.right && sidebarRect.top > gridRect.bottom - 50) {
-             // Likely wrapped
-             sidebar.style.marginTop = '0px';
-             return;
-        }
-        // Simpler check: do they overlap vertically? 
-        // In row layout, they share vertical space. In column, they don't (sidebar is below).
-        // If sidebar.top (minus current margin) is > grid.bottom, it's wrapped.
-        // Let's rely on a visual check: if card.left and sidebar.left are similar, it's stacked.
-        if (Math.abs(sidebarRect.left - gridRect.left) < 50) {
-             sidebar.style.marginTop = '0px';
-             return;
-        }
-
-        // 2. Calculate Offset
-        // We want the top of the sidebar to align with the top of the selected card.
-        // Formula: Distance from Grid Top to Card Top
-        const relativeOffset = cardRect.top - gridRect.top;
-        
-        // apply
-        sidebar.style.marginTop = `${Math.max(0, relativeOffset)}px`;
     },
 
-    // --- Google Sheet & API Processing ---
-
-    /**
-     * Step 1: Loads data from Google Sheet and sorts it.
-     */
-    async loadFromGoogleSheet() {
-        let url = this.elements.sheetUrl.value.trim();
-        let sheetName = this.elements.sheetNameInput.value.trim(); 
-        const defaultUrl = 'https://docs.google.com/spreadsheets/d/1svSdxGP0T63INwG0SzUvomOdFWTTOgdtK5tqXXqa66M/edit?gid=1370368781#gid=1370368781';
-        const defaultSheetName = 'GH CD';
-
-        // Check if the URL field is empty
-        if (!url) {
-            url = defaultUrl;
-            this.elements.sheetUrl.value = url;
-            
-            // If the URL was empty, also default the sheet name if it's empty
-            if (!sheetName) {
-                sheetName = defaultSheetName;
-                this.elements.sheetNameInput.value = sheetName;
-            }
-        }
-        
-        // At this point, if sheetName is still empty (because user entered a URL but no tab name), stop.
-        if (!sheetName) { 
-            this.setStatus("Please enter your Sheet Tab Name.");
-            return;
-        }
-
-        const regex = /spreadsheets\/d\/([a-zA-Z0-9-_]+)/;
-        const matches = url.match(regex);
-        
-        if (!matches || !matches[1]) {
-            this.setStatus("Invalid Google Sheet URL. Please paste the full URL from your browser.");
-            return;
-        }
-        
-        const SHEET_ID = matches[1];
-        const apiUrl = `https://opensheet.elk.sh/${SHEET_ID}/${encodeURIComponent(sheetName)}`;
-        
-        this.setStatus("Fetching data from Google Sheet...");
-        this.sheetQueue = []; 
-        this.db = []; 
-        this.clearFailedLog();
-        
-        try {
-            const response = await fetch(apiUrl);
-            if (!response.ok) {
-                throw new Error(`Could not access sheet. Status: ${response.status}. Check Sheet URL, Tab Name (case-sensitive), and sharing (must be 'Anyone with the link')`);
-            }
-            const rows = await response.json();
-            
-            if (!rows || rows.length === 0) {
-                throw new Error("Sheet is empty or has no data.");
-            }
-            
-            if (!rows[0].Artist || !rows[0].Album) {
-                this.logFailed("Google Sheet", "", `Error: Your sheet MUST have columns named exactly "Artist" and "Album" (case-sensitive).`);
-                this.setStatus("Error: Sheet columns not found. Check log.");
-                return;
-            }
-            
-            rows.forEach(row => {
-                if (!row.Artist || !row.Album) {
-                    return; 
-                }
-
-                // MODIFIED: Logic to parse tracks safely
-                let tracks = [];
-                try {
-                    // Handle cases where tracks might be stored as '[]' or an empty string
-                    if (row.tracks && row.tracks.length > 2) {
-                        tracks = JSON.parse(row.tracks);
-                    }
-                } catch (e) {
-                    // If parsing fails, tracks remains []
-                }
-
-                // MODIFIED: Only consider the album "complete" if it has an ID AND tracks.
-                // If it has an ID but no tracks, we force it into the queue to fetch from MusicBrainz again.
-                if (row.id && tracks.length > 0) {
-                    this.db.push({
-                        id: row.id,
-                        artist: row.Artist,
-                        title: row.Album,
-                        date: row.date || "",
-                        img: row.img || "", 
-                        tracks: tracks
-                    });
-                } else {
-                    this.sheetQueue.push({ artist: row.Artist, title: row.Album });
-                }
+    // --- A-Z NAVIGATION ---
+    jumpToLetter(letter) {
+        let targetIndex = -1;
+        if (letter === '#') {
+            targetIndex = this.db.findIndex(album => {
+                const firstChar = (album.artist || '').charAt(0).toUpperCase();
+                return firstChar < 'A' || firstChar > 'Z';
             });
-
-            this.sortAndRender(); 
-            this.setStatus(`Loaded ${this.db.length} pre-processed albums. ${this.sheetQueue.length} new albums are ready to be processed.`);
-            
-        } catch (e) {
-            console.error(e);
-            this.setStatus(`Error: ${e.message}`);
-            this.logFailed("Google Sheet", "", e.message);
+        } else {
+            targetIndex = this.db.findIndex(album => (album.artist || '').toUpperCase().startsWith(letter));
+        }
+        if (targetIndex === -1) {
+            this.setStatus(`No artists found starting with "${letter}".`);
+            return;
+        }
+        const targetCard = this.elements.grid.children[targetIndex];
+        if (targetCard) {
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            this.selectAlbum(targetIndex);
         }
     },
     
-    /**
-     * Step 2: Processes the queue of albums loaded from the sheet.
-     */
-    async processSheetQueue() {
-        if (this.sheetQueue.length === 0) {
-            this.setStatus("No new albums in the queue to process.");
-            return;
-        }
+    populateAZNav() {
+        const nav = document.getElementById('az-breadcrumb');
+        if (!nav) return;
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#".split('');
+        let html = '';
+        for (const char of letters) html += `<span class="az-letter" onclick="app.jumpToLetter('${char}')">${char}</span>`;
+        nav.innerHTML = html;
+    },
+
+    // --- IMAGE UPDATER ---
+    getImageDimensions(url) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+            img.onerror = () => reject('Error');
+            img.src = url;
+        });
+    },
+
+    async showImageUpdater() {
+        if (this.selectedIdx === -1) return;
+        const album = this.db[this.selectedIdx];
+        const grid = this.elements.modalImageGrid;
+        grid.innerHTML = '<p>Loading images...</p>';
+        this.elements.imageModal.style.display = 'flex';
+
+        const caaPromise = album.id ? api.fetchReleaseImages(album.id) : Promise.resolve([]);
+        const itunesPromise = api.searchItunes(album.artist, album.title);
+        const results = await Promise.allSettled([caaPromise, itunesPromise]);
         
+        const caaImages = (results[0].status === 'fulfilled') ? results[0].value : [];
+        const itunesData = (results[1].status === 'fulfilled') ? results[1].value : { results: [] };
+
+        let imagesToDisplay = [];
+        if (album.img) imagesToDisplay.push({ url: album.img, type: 'Current' });
+        caaImages.forEach(img => {
+            if (img.image) imagesToDisplay.push({ url: img.image, type: 'CAA (Orig)' });
+            if (img.thumbnails.large) imagesToDisplay.push({ url: img.thumbnails.large, type: 'CAA (500px)' });
+        });
+        itunesData.results.forEach(item => {
+            if (item.artworkUrl100) imagesToDisplay.push({ url: item.artworkUrl100.replace('100x100', '1200x1200'), type: 'iTunes' });
+        });
+
+        const uniqueImages = [];
+        const seenUrls = new Set();
+        for (const img of imagesToDisplay) {
+            if (!seenUrls.has(img.url)) { uniqueImages.push(img); seenUrls.add(img.url); }
+        }
+
+        grid.innerHTML = '';
+        uniqueImages.forEach(imgData => {
+            const itemContainer = document.createElement('div');
+            itemContainer.className = 'modal-image-item';
+            const imgEl = document.createElement('img');
+            imgEl.src = imgData.url;
+            imgEl.onclick = () => this.updateAlbumImage(imgData.url);
+            const infoEl = document.createElement('p');
+            infoEl.textContent = `... (${imgData.type})`;
+            itemContainer.append(imgEl, infoEl);
+            grid.appendChild(itemContainer);
+            (async () => {
+                try {
+                    const dims = await this.getImageDimensions(imgData.url);
+                    infoEl.textContent = `${dims.width} x ${dims.height} (${imgData.type})`;
+                } catch (e) { infoEl.textContent = `(${imgData.type})`; }
+            })();
+        });
+    },
+
+    closeImageUpdater() {
+        this.elements.imageModal.style.display = 'none';
+    },
+
+    updateAlbumImage(newImageUrl) {
+        if (this.selectedIdx === -1) return;
+        this.db[this.selectedIdx].img = newImageUrl;
+        this.updateSaveStatus();
+        this.closeImageUpdater();
+        this.renderGrid();
+    },
+
+    // --- SEARCH MODAL ---
+    async showAlbumSearch(artist) {
+        const list = this.elements.modalAlbumList;
+        list.innerHTML = '<p>Searching...</p>';
+        this.elements.albumSelectModal.style.display = 'flex';
+        try {
+            const data = await api.searchReleasesByArtist(artist);
+            list.innerHTML = '';
+            data.releases.forEach(release => {
+                const item = document.createElement('div');
+                item.className = 'album-select-item';
+                const releaseArtist = release['artist-credit']?.[0]?.name || artist;
+                const releaseYear = (release.date || '----').split('-')[0];
+                item.innerHTML = `<div class="album-select-item-info"><strong>${release.title}</strong><span>${releaseArtist} (${releaseYear})</span></div><button onclick="app.addAlbumFromSearch(this)" data-artist="${releaseArtist}" data-title="${release.title}">Add</button>`;
+                list.appendChild(item);
+            });
+        } catch (e) { list.innerHTML = 'Error searching.'; }
+    },
+
+    async addAlbumFromSearch(button) {
+        button.disabled = true; button.textContent = 'Adding...';
+        const success = await this.findAndAddAlbum(button.dataset.artist, button.dataset.title);
+        button.textContent = success ? 'Added!' : 'Failed';
+    },
+
+    closeAlbumSelectModal() { this.elements.albumSelectModal.style.display = 'none'; },
+
+    // --- DATA PROCESSING ---
+    async loadFromGoogleSheet() {
+      const url = this.elements.sheetUrl.value;
+      if (!url || !url.includes('/pub?') || !url.includes('output=tsv')) { this.setStatus("Invalid TSV link."); return; }
+      this.setStatus("Fetching data...");
+      try {
+        const response = await fetch(url);
+        const tsvText = await response.text();
+        const lines = tsvText.split(/\r?\n/).filter(Boolean);
+        if (lines.length < 3) throw new Error("Empty sheet.");
+        const headers = lines[1].split('\t');
+        const artistIndex = headers.indexOf("Artist");
+        const albumIndex = headers.indexOf("Album");
+        for (let i = 2; i < lines.length; i++) {
+          const row = lines[i].split('\t');
+          if (row[artistIndex] && row[albumIndex]) this.sheetQueue.push({ artist: row[artistIndex], title: row[albumIndex] });
+        }
+        this.setStatus(`Loaded ${this.sheetQueue.length} albums. Ready.`);
+      } catch (e) { this.setStatus("Error."); }
+    },
+    
+    async processSheetQueue() {
+        if (this.sheetQueue.length === 0) return;
         const total = this.sheetQueue.length;
         for (let i = 0; i < total; i++) {
             const item = this.sheetQueue[i];
-            this.setStatus(`Processing ${i + 1} of ${total}: ${item.artist} - ${item.title}`);
-            
-            const exists = this.db.some(a => a.artist === item.artist && a.title === item.title);
-            if (exists) {
-                this.logFailed(item.artist, item.title, "Already in collection, skipped.");
-                continue;
-            }
-            
-            try {
-                await this.findAndAddAlbum(item.artist, item.title);
-            } catch (e) {
-                this.logFailed(item.artist, item.title, `Unexpected error: ${e.message}`);
-            }
+            this.setStatus(`Processing ${i + 1} of ${total}: ${item.artist}...`);
+            await this.findAndAddAlbum(item.artist, item.title);
         }
-        
-        this.sheetQueue = []; // Clear the queue
-        this.setStatus(`Processing complete. ${total} new albums processed.`);
-        this.sortAndRender();
+        this.sheetQueue = [];
+        this.setStatus(`Complete.`);
     },
     
-    /**
-     * Searches MusicBrainz by title and adds to the DB.
-     * @param {string} artist - Artist name.
-     * @param {string} title - Album title.
-     * @returns {Promise<boolean>} - True if successful.
-     */
     async findAndAddAlbum(artist, title) {
+        if (this.db.some(a => a.artist === artist && a.title === title)) return false;
         try {
-            const searchData = await api.searchReleaseByTitle(artist, title);
-            
-            if (!searchData.releases || searchData.releases.length === 0) {
-                this.logFailed(artist, title, "Not found on MusicBrainz.");
-                return false;
-            }
-            
-            const release = searchData.releases[0]; 
-            return await this.processFoundRelease(release, artist, title);
-            
-        } catch (e) {
-            console.error(`Failed to fetch data for ${artist} - ${title}:`, e);
-            this.logFailed(artist, title, e.message);
-            return false;
-        }
-    },
-    
-    /**
-     * Searches MusicBrainz by barcode and adds to the DB.
-     */
-    async barcodeSearch() {
-        const barcode = this.elements.barcodeInput.value.trim();
-        if (!barcode) {
-            this.setStatus("Please enter a barcode.");
-            return;
-        }
-
-        this.setStatus(`Searching for barcode: ${barcode}...`);
-        
-        try {
-            const searchData = await api.searchReleaseByBarcode(barcode);
-            if (!searchData.releases || searchData.releases.length === 0) {
-                this.logFailed(barcode, "(Barcode)", "Not found on MusicBrainz.");
-                this.setStatus(`No album found for barcode: ${barcode}.`);
-                return;
-            }
-
+            const searchData = await api.searchRelease(artist, title);
+            if (!searchData.releases || searchData.releases.length === 0) return false;
             const release = searchData.releases[0];
-            const success = await this.processFoundRelease(release, barcode, "(Barcode)");
-            
-            if (success) {
-                this.setStatus(`Added: ${release.title} (from barcode)`);
-                this.elements.barcodeInput.value = '';
-            } else {
-                this.setStatus(`Could not add album for barcode: ${barcode}.`);
-            }
-
-        } catch (e) {
-            console.error(`Failed to fetch data for barcode ${barcode}:`, e);
-            this.logFailed(barcode, "(Barcode)", e.message);
-            this.setStatus(`Error searching for barcode. See log.`);
-        }
-    },
-
-    /**
-     * Shared logic to process a release, get tracks/art, and add to DB.
-     * @param {object} release - A MusicBrainz release object.
-     * @param {string} [originalQuery] - The original search term (for logging).
-     * @param {string} [originalType] - The original search type (for logging).
-     * @returns {Promise<boolean>} - True if successful.
-     */
-    async processFoundRelease(release, originalQuery, originalType) {
-        const mbid = release.id;
-
-        if (this.db.some(a => a.id === mbid)) {
-            this.logFailed(originalQuery, originalType, "Album already in collection.");
-            this.setStatus("Album is already in your collection.");
-            return false;
-        }
-
-        const mbArtist = release["artist-credit"]?.[0]?.name || "Unknown Artist";
-        const mbTitle = release.title || "Unknown Title";
-        const mbDate = release.date || "";
-
-        this.setStatus(`Found: ${mbArtist} - ${mbTitle}. Fetching details...`);
-
-        try {
-            const [coverArtUrl, releaseData] = await Promise.all([
-                api.fetchCoverArtUrl(mbid),
-                api.fetchReleaseDetails(mbid)
-            ]);
-
+            const mbid = release.id;
+            const [coverArtUrl, releaseData] = await Promise.all([api.fetchCoverArtUrl(mbid), api.fetchReleaseDetails(mbid)]);
             const tracks = [];
-            releaseData.media?.forEach(m => {
-                m.tracks?.forEach(t => {
-                    tracks.push({ number: t.number, title: t.title });
-                });
-            });
-
-            this.db.push({
-                id: mbid,
-                artist: mbArtist,
-                title: mbTitle,
-                date: mbDate,
-                img: coverArtUrl,
-                tracks: tracks
-            });
-            
+            releaseData.media?.forEach(m => m.tracks?.forEach(t => tracks.push({ number: t.number, title: t.title })));
+            this.db.push({ id: mbid, artist: release["artist-credit"]?.[0]?.name || artist, title: release.title || title, date: release.date || "", img: coverArtUrl, tracks: tracks });
+            this.updateSaveStatus();
             this.sortAndRender();
             return true;
-        } catch (e) {
-            this.logFailed(mbArtist, mbTitle, `Failed to fetch details: ${e.message}`);
-            return false;
-        }
+        } catch (e) { return false; }
     },
     
-    /**
-     * Wrapper for manually adding an album from the title/artist input fields.
-     */
+    async barcodeSearch() {
+        const barcode = this.elements.barcodeInput.value.trim();
+        if (!barcode) return;
+        this.setStatus("Searching barcode...");
+        try {
+            const data = await api.searchByBarcode(barcode);
+            if (!data.releases || data.releases.length === 0) { this.setStatus("Not found."); return; }
+            const release = data.releases[0];
+            await this.findAndAddAlbum(release["artist-credit"]?.[0]?.name, release.title);
+            this.elements.barcodeInput.value = '';
+        } catch (e) { this.setStatus("Error."); }
+    },
+
     async manualSearch() {
         const artist = this.elements.artistInput.value.trim();
         const title = this.elements.albumInput.value.trim();
-        
-        if (!artist || !title) {
-            this.setStatus("Please enter both artist and album title.");
-            return;
-        }
-
-        this.setStatus(`Searching for: ${artist} - ${title}...`);
-        const success = await this.findAndAddAlbum(artist, title);
-        
-        if (success) {
-            this.setStatus(`Added: ${artist} - ${title}. Remember to Export to CSV and update your Sheet!`);
+        if (artist && title) {
+            await this.findAndAddAlbum(artist, title);
+            this.elements.artistInput.value = ''; this.elements.albumInput.value = '';
+        } else if (artist) {
+            await this.showAlbumSearch(artist);
             this.elements.artistInput.value = '';
-            this.elements.albumInput.value = '';
-        } else {
-            this.setStatus(`Could not add: ${artist} - ${title}. See log.`);
         }
     },
 
     sortAndRender() {
         this.sortDB();
         this.renderGrid();
-        this.updateAlphaNav();
-        
-        // Check if selectedIdx is still valid
-        if (this.selectedIdx < 0 || this.selectedIdx >= this.db.length) {
-            this.selectedIdx = -1;
-            this.renderSidebar(); // Render empty sidebar
-            this.alignSidebar(); // Reset alignment
-        } else {
-            // Re-select the card (necessary to maintain selection highlight)
-            const card = document.getElementById(`album-card-${this.selectedIdx}`);
-            if (card) {
-                card.classList.add('selected');
-            }
-            this.renderSidebar(); // Render sidebar for selected item
-            this.alignSidebar(); // Align to card
-        }
+        if (this.selectedIdx > -1 && this.selectedIdx < this.db.length) this.selectAlbum(this.selectedIdx);
+        else { this.selectedIdx = -1; this.renderSidebar(); }
     },
 
-    // --- A-Z Navigation ---
-
-    /**
-     * Creates the A-Z navigation bar.
-     */
-    createAlphaNav() {
-        this.elements.alphaNav.innerHTML = '';
-        const letters = ['#', ...Array(26).fill(0).map((_, i) => String.fromCharCode(65 + i))];
-        
-        letters.forEach(letter => {
-            const span = document.createElement('span');
-            span.textContent = letter;
-            span.id = `nav-${letter}`;
-            span.onclick = () => this.jumpToLetter(letter);
-            this.elements.alphaNav.appendChild(span);
-        });
-        
-        this.updateAlphaNav();
-    },
-
-    /**
-     * Updates the A-Z nav to disable letters with no corresponding artists.
-     */
-    updateAlphaNav() {
-        const firstLetters = new Set(this.db.map(album => {
-            const artist = (album.artist || '').toUpperCase().replace(/^(THE|A) /i, '');
-            if (!artist) return '';
-            const char = artist.charAt(0);
-            return (char >= 'A' && char <= 'Z') ? char : '#';
-        }));
-
-        this.elements.alphaNav.querySelectorAll('span').forEach(span => {
-            const letter = span.textContent;
-            if (firstLetters.has(letter)) {
-                span.classList.remove('disabled');
-            } else {
-                span.classList.add('disabled');
-            }
-        });
-    },
-
-    /**
-     * Jumps to the first album starting with the selected letter.
-     * @param {string} letter - The letter to jump to.
-     */
-    jumpToLetter(letter) {
-        const findIndex = (album) => {
-            const artist = (album.artist || '').toUpperCase().replace(/^(THE|A) /i, '');
-            if (!artist) return false;
-            const char = artist.charAt(0);
-            if (letter === '#') {
-                return !(char >= 'A' && char <= 'Z');
-            }
-            return char === letter;
-        };
-
-        const idx = this.db.findIndex(findIndex);
-        
-        if (idx > -1) {
-            this.selectAlbum(idx);
-            
-            // Scroll the grid to the selected card
-            const selectedCard = document.getElementById(`album-card-${idx}`);
-            if (selectedCard) {
-                selectedCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
-        } else {
-            this.setStatus(`No artists found starting with "${letter}".`);
-        }
-    },
-
-    // --- Cover Art Modal Functions ---
-    
-    /**
-     * Opens the modal to find new cover art.
-     */
-    async openCoverArtModal() {
-        if (this.selectedIdx === -1) return;
-        
-        const album = this.db[this.selectedIdx];
-        // Removed check for album.id so manual search is always possible
-        // if (!album.id) { ... }
-
-        const grid = this.elements.coverArtModalGrid;
-        grid.innerHTML = '<p>Loading images from Archive...</p>';
-        this.elements.coverArtModal.style.display = 'block';
-        this.elements.customImageUrlInput.value = ''; // Reset custom input
-
-        // Add the current image as the first option
-        grid.innerHTML = `
-            <div class="cover-art-preview" onclick="app.closeCoverArtModal()">
-                <img src="${album.img || ''}" alt="Current">
-                <p>Current Image</p>
-                <p class="dim">(Click to keep)</p>
-            </div>
-        `;
-        
-        if (album.id) {
-            try {
-                const data = await api.fetchAllCoverArt(album.id);
-                if (data && data.images) {
-                    data.images.forEach(image => {
-                        // Don't re-add the "front" image if we already have it
-                        if (image.types.includes('Front') && (image.image === album.img || image.thumbnails['500'] === album.img)) {
-                            return;
-                        }
-
-                        const imgUrl = image.thumbnails.small || image.image;
-                        const fullImageUrl = image.image;
-                        const types = image.types.join(', ');
-                        const dimensions = image.dimensions ? `${image.dimensions.width}x${image.dimensions.height}` : 'Dimensions unknown';
-
-                        const previewEl = document.createElement('div');
-                        previewEl.className = 'cover-art-preview';
-                        previewEl.innerHTML = `
-                            <img src="${imgUrl}" alt="${types}">
-                            <p>${types}</p>
-                            <p class="dim">${dimensions}</p>
-                        `;
-                        previewEl.onclick = () => this.updateAlbumImage(fullImageUrl);
-                        grid.appendChild(previewEl);
-                    });
-                }
-            } catch (e) {
-                console.warn(`Could not fetch more images: ${e.message}`);
-                if (grid.children.length === 1) {
-                    grid.innerHTML += "<p>No other images found on Cover Art Archive.</p>";
-                }
-            }
-        } else {
-             grid.innerHTML += "<p>No MusicBrainz ID found. Use manual search below.</p>";
-        }
-    },
-
-    /**
-     * Opens a Google Image search in a new tab
-     */
-    searchGoogleImages() {
-        if (this.selectedIdx === -1) return;
-        const album = this.db[this.selectedIdx];
-        const query = `${album.artist} ${album.title} album cover art`;
-        const url = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}`;
-        window.open(url, '_blank');
-    },
-
-    /**
-     * Applies the custom image URL from the input field
-     */
-    applyCustomImage() {
-        const url = this.elements.customImageUrlInput.value.trim();
-        if (!url) {
-            alert("Please paste an image URL first.");
-            return;
-        }
-        this.updateAlbumImage(url);
-    },
-
-    /**
-     * Updates the selected album's image and closes the modal.
-     * @param {string} newUrl - The new image URL to apply.
-     */
-    updateAlbumImage(newUrl) {
-        if (this.selectedIdx === -1) return;
-        
-        this.db[this.selectedIdx].img = newUrl;
-        this.sortAndRender(); // Re-renders the grid with the new image
-        this.closeCoverArtModal();
-        this.setStatus("Album image updated!");
-    },
-
-    /**
-     * Closes the cover art modal.
-     */
-    closeCoverArtModal() {
-        this.elements.coverArtModal.style.display = 'none';
-    },
-
-    // --- Import / Export Functions ---
-
+    // --- EXPORT ---
     exportDB() {
-        if (this.db.length === 0) { alert('No data to export.'); return; }
         const json = JSON.stringify(this.db, null, 2);
         this.downloadFile(json, 'cd-collection.json', 'application/json');
+        this.isDirty = false;
+        this.elements.exportBtn.classList.remove('needs-save');
+    },
+
+    downloadFile(content, fileName, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = fileName; document.body.appendChild(a); a.click(); document.body.removeChild(a);
     },
 
     handleJSONUpload(event) {
@@ -1390,226 +993,46 @@ const app = {
         if (!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
-            try {
-                const data = JSON.parse(e.target.result);
-                if (!Array.isArray(data)) throw new Error("Invalid JSON file.");
-                this.db = data;
-                this.sortAndRender();
-                this.setStatus(`Imported ${this.db.length} albums from JSON.`);
-            } catch (err) {
-                this.setStatus(`Import failed: ${err.message}`);
-            }
-            event.target.value = ''; // Reset file input
+            this.db = JSON.parse(e.target.result);
+            this.updateSaveStatus();
+            this.sortAndRender();
         };
         reader.readAsText(file);
-    },
-
-    exportToCSV() {
-        if (this.db.length === 0) { alert("No data to export."); return; }
-        
-        let csv = "Artist,Album,img,id,tracks,date\n";
-        
-        const escapeCSV = (field) => {
-            if (field === null || field === undefined) field = "";
-            let str = String(field);
-            if (str.search(/("|,|\n)/g) >= 0) {
-                str = `"${str.replace(/"/g, '""')}"`;
-            }
-            return str;
-        };
-
-        this.db.forEach(c => {
-            // MODIFIED: Ensure JSON stringify happens even if empty, for consistency
-            const tracksStr = (c.tracks && c.tracks.length > 0) ? JSON.stringify(c.tracks) : "[]";
-            
-            const row = [
-                c.artist,
-                c.title,
-                c.img,
-                c.id,
-                tracksStr, 
-                c.date
-            ].map(escapeCSV).join(',');
-            
-            csv += row + "\n";
-        });
-
-        this.downloadFile(csv, 'cd-collection.csv', 'text/csv');
-    },
-    
-    /**
-     * A more robust CSV parser that handles quoted fields.
-     */
-    parseCSV(text) {
-        const rows = [];
-        let currentRow = [];
-        let inQuotes = false;
-        let field = '';
-        
-        for (let i = 0; i < text.length; i++) {
-            const char = text[i];
-            const nextChar = text[i+1];
-
-            if (char === '"') {
-                if (inQuotes && nextChar === '"') {
-                    // This is an escaped quote
-                    field += '"';
-                    i++; // Skip the next quote
-                } else if (inQuotes) {
-                    // This is the end of a quoted field
-                    inQuotes = false;
-                } else {
-                    // This is the start of a quoted field
-                    inQuotes = true;
-                }
-            } else if (char === ',' && !inQuotes) {
-                // End of a field
-                currentRow.push(field);
-                field = '';
-            } else if ((char === '\n' || char === '\r') && !inQuotes) {
-                // End of a row
-                if (char === '\r' && nextChar === '\n') {
-                    i++; // Skip LF in CRLF
-                }
-                // Only add row if it has fields
-                if (field || currentRow.length > 0) {
-                    currentRow.push(field);
-                    rows.push(currentRow);
-                }
-                currentRow = [];
-                field = '';
-            } else {
-                field += char;
-            }
-        }
-        // Add the last row if it exists
-        if (field || currentRow.length > 0) {
-            currentRow.push(field);
-            rows.push(currentRow);
-        }
-        return rows;
     },
 
     handleCSVUpload(event) {
         const file = event.target.files[0];
-        if (!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
-            try {
-                const text = e.target.result;
-                const rows = this.parseCSV(text); // Use the new parser
-                
-                if (rows.length < 2) throw new Error("CSV is empty or has no headers.");
-
-                const headerRow = rows.shift().map(h => h.trim().toLowerCase());
-                
-                const findIndex = (name) => {
-                    const idx = headerRow.indexOf(name);
-                    if (idx === -1) console.warn(`CSV column "${name}" not found.`);
-                    return idx;
-                }
-
-                const artistIdx = findIndex('artist');
-                const albumIdx = findIndex('album');
-                const imgIdx = findIndex('img');
-                const idIdx = findIndex('id');
-                const tracksIdx = findIndex('tracks');
-                const dateIdx = findIndex('date');
-                
-                if (artistIdx === -1 || albumIdx === -1) {
-                    throw new Error("CSV must have 'Artist' and 'Album' headers.");
-                }
-
-                const importedAlbums = [];
-                rows.forEach((cols, rowIndex) => {
-                    const artist = cols[artistIdx]?.trim() || "";
-                    const title = cols[albumIdx]?.trim() || "";
-                    
-                    if (!artist || !title) {
-                        console.warn(`Skipping row ${rowIndex+2}: missing artist or title.`);
-                        return; // Skip rows without artist/album
-                    }
-
-                    let tracks = [];
-                    const tracksJson = cols[tracksIdx] || "[]";
-                    try {
-                         // Handle cases where tracks might be stored as '[]' or an empty string
-                        if (tracksJson && tracksJson.length > 2) {
-                            tracks = JSON.parse(tracksJson);
-                        }
-                    } catch (e) {
-                        console.warn(`Could not parse tracks for ${title}: ${e.message}`);
-                    }
-                    
-                    importedAlbums.push({
-                        artist: artist,
-                        title: title,
-                        img: cols[imgIdx]?.trim() || "",
-                        id: cols[idIdx]?.trim() || "",
-                        tracks: tracks,
-                        date: cols[dateIdx]?.trim() || ""
-                    });
-                });
-                
-                let added = 0;
-                importedAlbums.forEach(album => {
-                    const exists = this.db.some(a => (a.id && a.id === album.id) || (a.artist === album.artist && a.title === album.title));
-                    if (!exists) {
-                        this.db.push(album);
-                        added++;
-                    }
-                });
-                
-                this.sortAndRender();
-                this.setStatus(`Imported ${added} new albums from CSV. ${importedAlbums.length - added} duplicates skipped.`);
-                
-            } catch (err) {
-                this.setStatus(`CSV Import failed: ${err.message}`);
-                this.logFailed("CSV Import", "", err.message);
-            }
-            event.target.value = ''; // Reset file input
+            const rows = e.target.result.split(/\r?\n/).filter(Boolean);
+            const headers = rows.shift().split(',').map(h => h.trim().toLowerCase());
+            const aIdx = headers.indexOf('artist'), bIdx = headers.indexOf('album');
+            rows.forEach(row => {
+                const cols = row.split(',');
+                this.db.push({ artist: cols[aIdx], title: cols[bIdx], tracks: [], img: null });
+            });
+            this.updateSaveStatus(); this.sortAndRender();
         };
         reader.readAsText(file);
     },
-
-    /**
-     * Generic file download helper.
-     */
-    downloadFile(content, fileName, mimeType) {
-        const blob = new Blob([content], { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    },
     
-    // --- Init ---
     init() {
-        this.renderGrid();
-        this.renderSidebar();
-        this.clearFailedLog();
-        this.createAlphaNav(); // Create the A-Z nav on load
-        this.setStatus("App loaded. Import a JSON/CSV database or load from a Google Sheet.");
-        
-        // --- Init for modal ---
-        this.elements.updateImageBtn.disabled = true;
-        this.elements.coverArtModalClose.onclick = () => this.closeCoverArtModal();
-        window.onclick = (event) => {
-            // Close modal if user clicks on the dark overlay
-            if (event.target == this.elements.coverArtModal) {
-                this.closeCoverArtModal();
-            }
-        };
+        this.populateAZNav();
+        // --- LOAD DATA AUTOMATICALLY ON START ---
+        if (!this.loadFromLocalStorage()) {
+            this.renderGrid();
+            this.renderSidebar();
+        }
+        this.isDirty = false;
+        this.elements.exportBtn.classList.remove('needs-save');
+        this.setStatus("App ready.");
     }
 };
 
-// Start the app once the DOM is loaded
-document.addEventListener('DOMContentLoaded', () => app.init());
-
+document.addEventListener('DOMContentLoaded', () => {
+    app.init();
+    window.addEventListener('beforeunload', (e) => { if (app.isDirty) { e.preventDefault(); e.returnValue = ''; } });
+});
 </script>
 </body>
 </html>
